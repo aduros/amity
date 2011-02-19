@@ -4,9 +4,12 @@
 #include "SDL_mixer.h"
 #include "SDL_opengles.h"
 
+#include "canvas/CanvasContext.h"
 #include "log.h"
 
 #define DATAFILE(filename) ("/sdcard/amity/" filename)
+
+static CanvasContext canvas;
 
 SDL_Surface* loadImage (const char* path)
 {
@@ -39,22 +42,17 @@ Uint32 delayFrame ()
 
 void renderTest (int x, int y)
 {
+    Texture fakeTexture = { 0, 60, 60 };
+
     glClearColor(0.1, 0.1, 0.1, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glColor4f(1.0, 0.0, 0.0, 1.0);
-    GLshort verts[] = {
-        0, 0,
-        50, 0,
-        0, 50,
-        50, 50,
-    };
+    glColor4f(0.0, 1.0, 0.0, 1.0);
 
-    glPushMatrix();
-    glTranslatef(x, y, 0);
-    glVertexPointer(2, GL_SHORT, 0, verts);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glPopMatrix();
+    canvas.save();
+    canvas.translate(x, y);
+    canvas.drawImage(&fakeTexture, 0, 0);
+    canvas.restore();
 
     SDL_RenderPresent();
 }

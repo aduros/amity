@@ -11,8 +11,10 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/external/SDL_mixer
 
 # These don't expect to be prefixed by LOCAL_PATH, but includes do (?)
+# TODO: Why doesn't $(wildcard) work here?
 LOCAL_SRC_FILES := \
     src/main.cpp \
+    src/canvas/Context.cpp \
     external/SDL/src/main/android/SDL_android_main.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL SDL_image SDL_mixer
