@@ -14,7 +14,7 @@ LOCAL_C_INCLUDES := \
 # TODO: Why doesn't $(wildcard) work here?
 LOCAL_SRC_FILES := \
     src/main.cpp \
-    src/canvas/Context.cpp \
+    src/canvas/CanvasContext.cpp \
     external/SDL/src/main/android/SDL_android_main.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL SDL_image SDL_mixer
