@@ -1,7 +1,92 @@
 #include <cstdlib>
 #include "SDL.h"
+#include "SDL_image.h"
+#include "SDL_mixer.h"
+#include "SDL_opengles.h"
 
 #include "log.h"
+
+#define DATAFILE(filename) ("/sdcard/amity/" filename)
+
+SDL_Surface* loadImage (const char* path)
+{
+    SDL_Surface* image = IMG_Load(path);
+
+    if (image == NULL) {
+        LOGE("Couldn't load image %s: %s", path, IMG_GetError());
+        return NULL;
+    }
+
+    SDL_Surface* surface = SDL_DisplayFormat(image);
+    SDL_FreeSurface(image);
+    return surface;
+}
+
+Uint32 delayFrame ()
+{
+    static Uint32 nextTick = 0;
+    Uint32 currentTick = SDL_GetTicks();
+
+    Uint32 delay = 0;
+    if (currentTick < nextTick) {
+        delay = nextTick - currentTick;
+        SDL_Delay(delay);
+    }
+
+    nextTick = currentTick + (1000/60);
+    return delay;
+}
+
+void renderTest (int x, int y)
+{
+    glClearColor(0.1, 0.1, 0.1, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glColor4f(1.0, 0.0, 0.0, 1.0);
+    GLshort verts[] = {
+        0, 0,
+        50, 0,
+        0, 50,
+        50, 50,
+    };
+
+    glPushMatrix();
+    glTranslatef(x, y, 0);
+    glVertexPointer(2, GL_SHORT, 0, verts);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glPopMatrix();
+
+    SDL_RenderPresent();
+}
+
+void mainLoop ()
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    SDL_Event event;
+    int x = 0, y = 0;
+    Uint32 elapsed = 0;
+
+    for (;;) {
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_MOUSEMOTION:
+                    x = event.motion.x;
+                    y = event.motion.y;
+                    //LOGI("Moved to %i,%i", x, y);
+                    break;
+                case SDL_QUIT:
+                    return;
+                default:
+                    LOGI("Unhandled event %i", event.type);
+            }
+        }
+
+        renderTest(x, y);
+
+        elapsed = delayFrame();
+    }
+}
 
 int main (int argc, char* argv[])
 {
@@ -13,46 +98,34 @@ int main (int argc, char* argv[])
     }
     atexit(SDL_Quit);
 
-    SDL_Surface* screen = SDL_SetVideoMode(
-        0, 0, 0, SDL_DOUBLEBUF | SDL_HWSURFACE);
-    if (screen == NULL) {
-        LOGE("Unable to set up screen: %s", SDL_GetError());
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
+    SDL_Window* window = SDL_CreateWindow(NULL, 0, 0, 0, 0,
+        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
+    if (window == NULL) {
+        LOGE("Unable to create window: %s", SDL_GetError());
         return 1;
     }
 
-    LOGI("Created screen [width=%i, height=%i]", screen->w, screen->h);
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    LOGI("Created window [width=%i, height=%i]", w, h);
 
-    //SDL_Surface *temp;
+    if (SDL_CreateRenderer(window, 0, 0) < 0) {
+        LOGE("Unable to create renderer: %s", SDL_GetError());
+        return 1;
+    }
 
-    //temp = SDL_LoadBMP("image.bmp");
-    //if (temp == NULL) {
-    //    printf("Unable to load bitmap: %s", SDL_GetError());
-    //    return 1;
-    //}
+    if (Mix_OpenAudio(11025, AUDIO_U8, 1, 512) < 0) {
+        LOGW("Unable to set up audio: %s", SDL_GetError());
+        // Just a warning, try to press on
+    }
 
-    //image = SDL_DisplayFormat(temp);
-    //SDL_FreeSurface(temp);
+    mainLoop();
 
-    //SDL_Rect src, dest;
-
-    //src.x = 0;
-    //src.y = 0;
-    //src.w = image->w;
-    //src.h = image->h;
-
-    //dest.x = 100;
-    //dest.y = 100;
-    //dest.w = image->w;
-    //dest.h = image->h;
-
-    //SDL_BlitSurface(image, &src, screen, &dest);
-    
-    SDL_Rect dest = { 100, 100, 150, 200 };
-    SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 255, 0, 0));
-
-    SDL_Flip(screen);
-    SDL_Delay(10000);
-
-    LOGI("Bye!");
+    LOGI("Quitting normally");
+    Mix_CloseAudio();
     return 0;
 }
