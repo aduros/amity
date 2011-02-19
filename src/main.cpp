@@ -90,7 +90,7 @@ void mainLoop ()
 
 int main (int argc, char* argv[])
 {
-    LOGI("Main screen turn on");
+    LOGI("Main screen turn on, compiled " __DATE__ " at " __TIME__);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         LOGE("Unable to init SDL: %s", SDL_GetError());
