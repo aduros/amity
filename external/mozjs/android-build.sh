@@ -19,7 +19,7 @@ mkdir -p nspr
 cd nspr
 $MOZILLA_CENTRAL/nsprpub/configure \
     --target=arm-android-eabi \
-    --enable-thumb2 \
+    --disable-thumb2 \
     --with-android-ndk=$ANDROID_NDK
 make
 
@@ -35,5 +35,5 @@ $MOZILLA_CENTRAL/js/src/configure \
     --enable-threadsafe \
     --with-endian=little \
     --with-arm-kuser \
-    --enable-thumb2
+    --disable-thumb2
 make BUILD_OPT=1
