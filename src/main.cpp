@@ -5,6 +5,8 @@
 #include "SDL_opengles.h"
 
 #include "canvas/CanvasContext.h"
+#include "script/Script.h"
+
 #include "log.h"
 
 #define DATAFILE(filename) ("/sdcard/amity/" filename)
@@ -51,6 +53,7 @@ void renderTest (int x, int y)
 
     canvas.save();
     canvas.translate(x, y);
+    canvas.rotate(30);
     canvas.drawImage(&fakeTexture, 0, 0);
     canvas.restore();
 
@@ -120,6 +123,9 @@ int main (int argc, char* argv[])
         LOGW("Unable to set up audio: %s", SDL_GetError());
         // Just a warning, try to press on
     }
+
+    Script script;
+    script.parse("test.js", "$amity.log(\"hello from JS\");");
 
     mainLoop();
 

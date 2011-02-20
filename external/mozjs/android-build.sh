@@ -19,7 +19,8 @@ mkdir -p nspr
 cd nspr
 $MOZILLA_CENTRAL/nsprpub/configure \
     --target=arm-android-eabi \
-    --with-android-ndk=$ANDROID_NDK 
+    --enable-thumb2 \
+    --with-android-ndk=$ANDROID_NDK
 make
 
 cd $BUILD_DIR
@@ -34,5 +35,5 @@ $MOZILLA_CENTRAL/js/src/configure \
     --enable-threadsafe \
     --with-endian=little \
     --with-arm-kuser \
-    --disable-thumb2 # Required to run on the emulator?
+    --enable-thumb2
 make BUILD_OPT=1
