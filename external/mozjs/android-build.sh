@@ -36,4 +36,4 @@ $MOZILLA_CENTRAL/js/src/configure \
     --with-endian=little \
     --with-arm-kuser \
     --disable-thumb2
-make BUILD_OPT=1
+make

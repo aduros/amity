@@ -22,10 +22,9 @@ LOCAL_SRC_FILES := \
     src/script/Script.cpp \
     external/SDL/src/main/android/SDL_android_main.cpp
 
-LOCAL_SHARED_LIBRARIES := SDL SDL_image SDL_mixer nspr4 plc4 plds4 libstdc++
-LOCAL_STATIC_LIBRARIES := mozjs
+LOCAL_SHARED_LIBRARIES := SDL SDL_image SDL_mixer mozjs
 
-LOCAL_LDLIBS := -lGLESv1_CM -llog -lstdc++
+LOCAL_LDLIBS := -lGLESv1_CM -llog
 #LOCAL_LDLIBS := -lGLESv1_CM -llog \
 #    -L $(LOCAL_PATH)/external/mozjs/android-build/js -l js_static
 
