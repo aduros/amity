@@ -24,8 +24,6 @@ static void scriptReportError (JSContext* _ctx, const char* message, JSErrorRepo
 
 static JSBool amity_log (JSContext* ctx, uintN argc, jsval* vp)
 {
-    LOGI("amity_log %i", argc);
-
     JSString* message;
     if (!JS_ConvertArguments(ctx, argc, JS_ARGV(ctx, vp), "S", &message)) {
         return JS_FALSE;
@@ -63,7 +61,6 @@ Script::~Script ()
 
 int Script::parse (const char* filename, const char* source)
 {
-    LOGI("A");
     if (rt == NULL) {
         LOGI("Creating runtime");
         rt = JS_NewRuntime(8L * 1024L * 1024L);
@@ -72,13 +69,11 @@ int Script::parse (const char* filename, const char* source)
         }
     }
 
-    LOGI("B Creating context");
     _ctx = JS_NewContext(rt, 8192);
     if (_ctx == NULL) {
         return 1;
     }
 
-    LOGI("C setting options");
     JS_SetOptions(_ctx,
         JSOPTION_STRICT |
         JSOPTION_WERROR |
@@ -89,16 +84,15 @@ int Script::parse (const char* filename, const char* source)
     JS_SetVersion(_ctx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_ctx, scriptReportError);
 
-    LOGI("D creating global %s", scriptClassGlobal.name);
     JSObject* global = JS_NewGlobalObject(_ctx, &scriptClassGlobal);
     if (global == NULL) {
        return 1;
     }
 
-    LOGI("E");
     if (!JS_InitStandardClasses(_ctx, global)) {
        return 1;
     }
+    scriptInitClasses(_ctx, global);
 
     JSBool success = JS_EvaluateScript(_ctx, global, source, strlen(source),
         filename, 0, NULL);
