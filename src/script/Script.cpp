@@ -7,10 +7,9 @@
 #include "log.h"
 
 static JSRuntime* rt = NULL;
-
 static JSClass scriptClassGlobal = {
     "global", JSCLASS_GLOBAL_FLAGS,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
     JSCLASS_NO_OPTIONAL_MEMBERS
 };
@@ -39,7 +38,7 @@ static JSBool amity_log (JSContext* ctx, uintN argc, jsval* vp)
 
 static JSClass scriptClassAmity = {
     "Amity", 0,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 };
 static JSFunctionSpec scriptClassAmity_staticMethods[] = {
@@ -64,18 +63,22 @@ Script::~Script ()
 
 int Script::parse (const char* filename, const char* source)
 {
+    LOGI("A");
     if (rt == NULL) {
+        LOGI("Creating runtime");
         rt = JS_NewRuntime(8L * 1024L * 1024L);
         if (rt == NULL) {
             return 1;
         }
     }
 
+    LOGI("B Creating context");
     _ctx = JS_NewContext(rt, 8192);
     if (_ctx == NULL) {
         return 1;
     }
 
+    LOGI("C setting options");
     JS_SetOptions(_ctx,
         JSOPTION_STRICT |
         JSOPTION_WERROR |
@@ -86,11 +89,13 @@ int Script::parse (const char* filename, const char* source)
     JS_SetVersion(_ctx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_ctx, scriptReportError);
 
+    LOGI("D creating global %s", scriptClassGlobal.name);
     JSObject* global = JS_NewGlobalObject(_ctx, &scriptClassGlobal);
     if (global == NULL) {
        return 1;
     }
 
+    LOGI("E");
     if (!JS_InitStandardClasses(_ctx, global)) {
        return 1;
     }

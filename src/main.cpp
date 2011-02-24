@@ -1,7 +1,5 @@
 #include <cstdlib>
 #include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_mixer.h"
 #include "SDL_opengles.h"
 
 #include "canvas/CanvasContext.h"
@@ -12,20 +10,6 @@
 #define DATAFILE(filename) ("/sdcard/amity/" filename)
 
 static CanvasContext canvas;
-
-SDL_Surface* loadImage (const char* path)
-{
-    SDL_Surface* image = IMG_Load(path);
-
-    if (image == NULL) {
-        LOGE("Couldn't load image %s: %s", path, IMG_GetError());
-        return NULL;
-    }
-
-    SDL_Surface* surface = SDL_DisplayFormat(image);
-    SDL_FreeSurface(image);
-    return surface;
-}
 
 Uint32 delayFrame ()
 {
@@ -119,17 +103,11 @@ int main (int argc, char* argv[])
         return 1;
     }
 
-    if (Mix_OpenAudio(11025, AUDIO_U8, 1, 512) < 0) {
-        LOGW("Unable to set up audio: %s", SDL_GetError());
-        // Just a warning, try to press on
-    }
-
     Script script;
     script.parse("test.js", "$amity.log(\"hello from JS\");");
 
     mainLoop();
 
     LOGI("Quitting normally");
-    Mix_CloseAudio();
     return 0;
 }
