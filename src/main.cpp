@@ -1,4 +1,6 @@
 #include <cstdlib>
+#include <cstdio>
+
 #include "SDL.h"
 #include "SDL_opengles.h"
 
@@ -7,7 +9,8 @@
 
 #include "log.h"
 
-#define DATAFILE(filename) ("/sdcard/amity/" filename)
+// TODO: Test assets are looked up on the sdcard for now, eventually it should read from the APK
+#define ASSET(filename) ("/sdcard/data/" filename)
 
 static CanvasContext canvas;
 
@@ -44,6 +47,20 @@ void renderTest (int x, int y)
     SDL_RenderPresent();
 }
 
+void loadScript (Script* script, const char *filename)
+{
+    // TODO: C++ stream IO
+    FILE* file = fopen(filename, "r");
+    char buffer[500 * 1024];
+    int r = fread(buffer, sizeof(char), sizeof(buffer), file);
+    buffer[r] = '\0';
+    LOGI("Loaded script, #%i: %s", r, buffer);
+    fclose(file);
+
+    script->parse(filename, buffer);
+    //"var n = 0; $amity.onEnterFrame = function (dt) { $amity.log('elapsed ' + dt) };");
+}
+
 void mainLoop ()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -53,7 +70,7 @@ void mainLoop ()
     Uint32 elapsed = 0;
 
     Script script;
-    script.parse("test.js", "var n = 0; $amity.onEnterFrame = function (dt) { $amity.log('elapsed ' + dt) };");
+    loadScript(&script, ASSET("test.js"));
 
     for (;;) {
         while (SDL_PollEvent(&event)) {
