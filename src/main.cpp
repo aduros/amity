@@ -52,6 +52,9 @@ void mainLoop ()
     int x = 0, y = 0;
     Uint32 elapsed = 0;
 
+    Script script;
+    script.parse("test.js", "var n = 0; $amity.onEnterFrame = function (dt) { $amity.log('elapsed ' + dt) };");
+
     for (;;) {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -66,6 +69,8 @@ void mainLoop ()
                     LOGI("Unhandled event %i", event.type);
             }
         }
+
+        script.onEnterFrame(elapsed);
 
         renderTest(x, y);
 
@@ -102,9 +107,6 @@ int main (int argc, char* argv[])
         LOGE("Unable to create renderer: %s", SDL_GetError());
         return 1;
     }
-
-    Script script;
-    script.parse("test.js", "$amity.log(\"hello from JS\");");
 
     mainLoop();
 

@@ -34,12 +34,25 @@ static JSBool amity_log (JSContext* ctx, uintN argc, jsval* vp)
     return JS_TRUE;
 }
 
-static JSClass scriptClassAmity = {
+static JSBool amity_onEnterFrame_set (JSContext* ctx, JSObject* obj, jsid id, jsval *vp)
+{
+    JSFunction* fn = JS_ValueToFunction(ctx, *vp);
+    if (fn == NULL) {
+        return JS_FALSE;
+    }
+
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(ctx));
+    script->setOnEnterFrame(fn);
+
+    return JS_TRUE;
+}
+
+static JSClass classAmity = {
     "Amity", 0,
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 };
-static JSFunctionSpec scriptClassAmity_staticMethods[] = {
+static JSFunctionSpec classAmity_functions[] = {
     // JS_TN?
     JS_FS("log", amity_log, 1, 0),
     JS_FS_END
@@ -47,9 +60,12 @@ static JSFunctionSpec scriptClassAmity_staticMethods[] = {
 
 static void scriptInitClasses (JSContext* ctx, JSObject* global)
 {
-    JSObject* amity = JS_NewObject(ctx, &scriptClassAmity, NULL, global);
+    JSObject* amity = JS_NewObject(ctx, &classAmity, NULL, global);
     JS_DefineProperty(ctx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
-    JS_DefineFunctions(ctx, amity, scriptClassAmity_staticMethods);
+    JS_DefineFunctions(ctx, amity, classAmity_functions);
+
+    JS_DefineProperty(ctx, amity, "onEnterFrame", JSVAL_NULL,
+        JS_PropertyStub, amity_onEnterFrame_set, 0);
 }
 
 Script::~Script ()
@@ -73,6 +89,9 @@ int Script::parse (const char* filename, const char* source)
     if (_ctx == NULL) {
         return 1;
     }
+
+    // Attach 'this' to the context so we can look it up in bound functions
+    JS_SetContextPrivate(_ctx, this);
 
     JS_SetOptions(_ctx,
         JSOPTION_STRICT |
@@ -100,7 +119,14 @@ int Script::parse (const char* filename, const char* source)
     return !success;
 }
 
-void Script::onEnterFrame (float dt)
+void Script::onEnterFrame (unsigned int dt)
 {
-    // TODO: Call into js
+    if (_onEnterFrame != NULL) {
+        jsval argv[] = { INT_TO_JSVAL(dt) };
+        jsval rval;
+        JS_CallFunction(_ctx, JS_GetGlobalObject(_ctx), _onEnterFrame, 1, argv, &rval);
+    }
+
+    // TODO: Put this in a separate method?
+    JS_MaybeGC(_ctx);
 }
