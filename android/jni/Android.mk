@@ -9,7 +9,7 @@ LOCAL_PATH := ..
 LOCAL_MODULE := amity
 
 LOCAL_C_INCLUDES := \
-    $(LOCAL_PATH)/include \
+    $(LOCAL_PATH)/src \
     $(LOCAL_PATH)/external/SDL/include \
     $(LOCAL_PATH)/external/SDL_image \
     $(LOCAL_PATH)/external/SDL_mixer \
