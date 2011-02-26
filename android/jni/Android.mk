@@ -19,7 +19,9 @@ LOCAL_C_INCLUDES := \
 # TODO: Why doesn't $(wildcard) work here?
 LOCAL_SRC_FILES := \
     src/main.cpp \
+    src/assets.cpp \
     src/canvas/CanvasContext.cpp \
+    src/canvas/Texture.cpp \
     src/script/Script.cpp \
     external/SDL/src/main/android/SDL_android_main.cpp
 

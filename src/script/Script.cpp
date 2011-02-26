@@ -6,6 +6,7 @@
 
 #include "AmityContext.h"
 #include "log.h"
+#include "assets.h"
 
 static JSRuntime* rt = NULL;
 static JSClass scriptClassGlobal = {
@@ -98,9 +99,10 @@ static JSBool amity_canvas_drawTestImage (JSContext* jsCtx, uintN argc, jsval* v
         return JS_FALSE;
     }
 
-    Texture fakeTexture = { 0, 60, 60 };
+    static Texture* testTexture = Texture::fromAsset(SDCARD("tentacle.bmp"));
+
     Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
-    script->getAmityCtx()->canvas.drawImage(&fakeTexture, x, y);
+    script->getAmityCtx()->canvas.drawImage(testTexture, x, y);
     return JS_TRUE;
 }
 

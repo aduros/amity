@@ -9,9 +9,7 @@
 #include "AmityContext.h"
 
 #include "log.h"
-
-// TODO: Test assets are looked up on the sdcard for now, eventually it should read from the APK
-#define ASSET(filename) ("/sdcard/data/" filename)
+#include "assets.h"
 
 static AmityContext amityCtx;
 
@@ -33,25 +31,21 @@ Uint32 delayFrame ()
 void loadScript (Script* script, const char *filename)
 {
     // TODO: C++ stream IO
-    FILE* file = fopen(filename, "r");
     char buffer[500 * 1024];
-    int r = fread(buffer, sizeof(char), sizeof(buffer), file);
+    SDL_RWops* asset = loadAsset(filename);
+    int r = SDL_RWread(asset, buffer, sizeof(char), sizeof(buffer));
     buffer[r] = '\0';
-    fclose(file);
 
     script->parse(filename, buffer);
-    //"var n = 0; $amity.onEnterFrame = function (dt) { $amity.log('elapsed ' + dt) };");
 }
 
 void mainLoop ()
 {
-    glEnableClientState(GL_VERTEX_ARRAY);
-
     SDL_Event event;
     int x = 0, y = 0;
     Uint32 elapsed = 0;
 
-    loadScript(&amityCtx.script, ASSET("test.js"));
+    loadScript(&amityCtx.script, SDCARD("test.js"));
 
     for (;;) {
         while (SDL_PollEvent(&event)) {
@@ -70,8 +64,6 @@ void mainLoop ()
 
         glClearColor(0.1, 0.1, 0.1, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
-        // I'm painting textures solid green for now
-        glColor4f(0.0, 1.0, 0.0, 1.0);
 
         amityCtx.script.onEnterFrame(elapsed);
 

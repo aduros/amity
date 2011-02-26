@@ -1,5 +1,7 @@
 #include "canvas/CanvasContext.h"
 
+#include "SDL_opengles.h"
+
 void CanvasContext::save ()
 {
     glPushMatrix();
@@ -33,10 +35,10 @@ void CanvasContext::setBlendMode (int blendMode)
 {
 }
 
-void CanvasContext::drawImage (const Texture* image, float dx, float dy)
+void CanvasContext::drawImage (const Texture* texture, float dx, float dy)
 {
-    float w = image->width;
-    float h = image->height;
+    float w = texture->getWidth();
+    float h = texture->getHeight();
 
     GLfloat verts[] = {
         dx, dy,
@@ -44,11 +46,23 @@ void CanvasContext::drawImage (const Texture* image, float dx, float dy)
         dx, dy + h,
         dx + w, dy + h,
     };
+    GLfloat uv[] = {
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 1,
+    };
 
-    //glBindTexture(GL_TEXTURE_2D, image->textureId);
-
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture->getId());
     glVertexPointer(2, GL_FLOAT, 0, verts);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glTexCoordPointer(2, GL_FLOAT, 0, uv);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    //glBindTexture(GL_TEXTURE_2D, 0);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisable(GL_TEXTURE_2D);
 }
