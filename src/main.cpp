@@ -12,7 +12,8 @@
 // TODO: Test assets are looked up on the sdcard for now, eventually it should read from the APK
 #define ASSET(filename) ("/sdcard/data/" filename)
 
-static CanvasContext canvas;
+extern CanvasContext canvas;
+CanvasContext canvas;
 
 Uint32 delayFrame ()
 {
@@ -29,24 +30,6 @@ Uint32 delayFrame ()
     return delay;
 }
 
-void renderTest (int x, int y)
-{
-    Texture fakeTexture = { 0, 60, 60 };
-
-    glClearColor(0.1, 0.1, 0.1, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glColor4f(0.0, 1.0, 0.0, 1.0);
-
-    canvas.save();
-    canvas.translate(x, y);
-    canvas.rotate(30);
-    canvas.drawImage(&fakeTexture, 0, 0);
-    canvas.restore();
-
-    SDL_RenderPresent();
-}
-
 void loadScript (Script* script, const char *filename)
 {
     // TODO: C++ stream IO
@@ -54,7 +37,6 @@ void loadScript (Script* script, const char *filename)
     char buffer[500 * 1024];
     int r = fread(buffer, sizeof(char), sizeof(buffer), file);
     buffer[r] = '\0';
-    LOGI("Loaded script, #%i: %s", r, buffer);
     fclose(file);
 
     script->parse(filename, buffer);
@@ -87,10 +69,14 @@ void mainLoop ()
             }
         }
 
+        glClearColor(0.1, 0.1, 0.1, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        // I'm painting textures solid green for now
+        glColor4f(0.0, 1.0, 0.0, 1.0);
+
         script.onEnterFrame(elapsed);
 
-        renderTest(x, y);
-
+        SDL_RenderPresent();
         elapsed = delayFrame();
     }
 }

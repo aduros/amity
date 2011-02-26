@@ -6,6 +6,10 @@
 
 #include "log.h"
 
+#include "canvas/CanvasContext.h"
+
+extern CanvasContext canvas;
+
 static JSRuntime* rt = NULL;
 static JSClass scriptClassGlobal = {
     "global", JSCLASS_GLOBAL_FLAGS,
@@ -36,7 +40,7 @@ static JSBool amity_log (JSContext* ctx, uintN argc, jsval* vp)
 
 static JSBool amity_onEnterFrame_set (JSContext* ctx, JSObject* obj, jsid id, jsval *vp)
 {
-    JSFunction* fn = JS_ValueToFunction(ctx, *vp);
+    JSFunction* fn = JS_ValueToFunction(ctx, vp[0]);
     if (fn == NULL) {
         return JS_FALSE;
     }
@@ -47,25 +51,82 @@ static JSBool amity_onEnterFrame_set (JSContext* ctx, JSObject* obj, jsid id, js
     return JS_TRUE;
 }
 
-static JSClass classAmity = {
-    "Amity", 0,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-};
-static JSFunctionSpec classAmity_functions[] = {
-    // JS_TN?
-    JS_FS("log", amity_log, 1, 0),
-    JS_FS_END
-};
-
-static void scriptInitClasses (JSContext* ctx, JSObject* global)
+static JSBool amity_canvas_save (JSContext* ctx, uintN argc, jsval* vp)
 {
-    JSObject* amity = JS_NewObject(ctx, &classAmity, NULL, global);
-    JS_DefineProperty(ctx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
-    JS_DefineFunctions(ctx, amity, classAmity_functions);
+    canvas.save();
+    return JS_TRUE;
+}
+
+static JSBool amity_canvas_restore (JSContext* ctx, uintN argc, jsval* vp)
+{
+    canvas.restore();
+    return JS_TRUE;
+}
+
+static JSBool amity_canvas_rotate (JSContext* ctx, uintN argc, jsval* vp)
+{
+    jsval* argv = JS_ARGV(ctx, vp);
+    double angle;
+    if (!JS_ValueToNumber(ctx, argv[0], &angle)) {
+        return JS_FALSE;
+    }
+
+    canvas.rotate(angle);
+    return JS_TRUE;
+}
+
+static JSBool amity_canvas_translate (JSContext* ctx, uintN argc, jsval* vp)
+{
+    jsval* argv = JS_ARGV(ctx, vp);
+    double x, y;
+    if (!JS_ValueToNumber(ctx, argv[0], &x) ||
+        !JS_ValueToNumber(ctx, argv[1], &y)) {
+        return JS_FALSE;
+    }
+
+    canvas.translate(x, y);
+    return JS_TRUE;
+}
+
+static JSBool amity_canvas_drawTestImage (JSContext* ctx, uintN argc, jsval* vp)
+{
+    jsval* argv = JS_ARGV(ctx, vp);
+    double x, y;
+    if (!JS_ValueToNumber(ctx, argv[0], &x) ||
+        !JS_ValueToNumber(ctx, argv[1], &y)) {
+        return JS_FALSE;
+    }
+
+    Texture fakeTexture = { 0, 60, 60 };
+    canvas.drawImage(&fakeTexture, x, y);
+    return JS_TRUE;
+}
+
+static void initAmityClasses (JSContext* ctx, JSObject* global)
+{
+    JSObject* amity = JS_NewObject(ctx, NULL, NULL, global);
+    JSFunctionSpec amityFunctions[] = {
+        JS_FS("log", amity_log, 1, 0),
+        JS_FS_END
+    };
+    JS_DefineFunctions(ctx, amity, amityFunctions);
 
     JS_DefineProperty(ctx, amity, "onEnterFrame", JSVAL_NULL,
         JS_PropertyStub, amity_onEnterFrame_set, 0);
+
+    JSObject* canvas = JS_NewObject(ctx, NULL, NULL, NULL);
+    JSFunctionSpec canvasFunctions[] = {
+        JS_FS("save", amity_canvas_save, 0, 0),
+        JS_FS("restore", amity_canvas_restore, 0, 0),
+        JS_FS("rotate", amity_canvas_rotate, 1, 0),
+        JS_FS("translate", amity_canvas_translate, 2, 0),
+        JS_FS("drawTestImage", amity_canvas_drawTestImage, 2, 0),
+        JS_FS_END
+    };
+    JS_DefineFunctions(ctx, canvas, canvasFunctions);
+    JS_DefineProperty(ctx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
+
+    JS_DefineProperty(ctx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
 }
 
 Script::~Script ()
@@ -93,13 +154,12 @@ int Script::parse (const char* filename, const char* source)
     // Attach 'this' to the context so we can look it up in bound functions
     JS_SetContextPrivate(_ctx, this);
 
+    // TODO: Re-enable JSOPTION_JIT and JSOPTION_METHODJIT when they stop crashing my emulator
     JS_SetOptions(_ctx,
         JSOPTION_STRICT |
         JSOPTION_WERROR |
         JSOPTION_VAROBJFIX |
-        JSOPTION_NO_SCRIPT_RVAL |
-        JSOPTION_JIT |
-        JSOPTION_METHODJIT);
+        JSOPTION_NO_SCRIPT_RVAL);
     JS_SetVersion(_ctx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_ctx, scriptReportError);
 
@@ -111,7 +171,7 @@ int Script::parse (const char* filename, const char* source)
     if (!JS_InitStandardClasses(_ctx, global)) {
        return 1;
     }
-    scriptInitClasses(_ctx, global);
+    initAmityClasses(_ctx, global);
 
     JSBool success = JS_EvaluateScript(_ctx, global, source, strlen(source),
         filename, 0, NULL);
