@@ -4,11 +4,8 @@
 #include "jsapi.h"
 #undef XP_UNIX
 
+#include "AmityContext.h"
 #include "log.h"
-
-#include "canvas/CanvasContext.h"
-
-extern CanvasContext canvas;
 
 static JSRuntime* rt = NULL;
 static JSClass scriptClassGlobal = {
@@ -18,7 +15,7 @@ static JSClass scriptClassGlobal = {
     JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
-static void scriptReportError (JSContext* _ctx, const char* message, JSErrorReport* report)
+static void scriptReportError (JSContext* jsCtx, const char* message, JSErrorReport* report)
 {
     LOGW("%s:%u:%s\n",
         report->filename ? report->filename : "<no filename>",
@@ -26,95 +23,100 @@ static void scriptReportError (JSContext* _ctx, const char* message, JSErrorRepo
         message);
 }
 
-static JSBool amity_log (JSContext* ctx, uintN argc, jsval* vp)
+static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
 {
     JSString* message;
-    if (!JS_ConvertArguments(ctx, argc, JS_ARGV(ctx, vp), "S", &message)) {
+    if (!JS_ConvertArguments(jsCtx, argc, JS_ARGV(jsCtx, vp), "S", &message)) {
         return JS_FALSE;
     }
 
-    LOGI("amity.log() -> %s", JS_EncodeString(ctx, message));
+    LOGI("amity.log() -> %s", JS_EncodeString(jsCtx, message));
 
     return JS_TRUE;
 }
 
-static JSBool amity_onEnterFrame_set (JSContext* ctx, JSObject* obj, jsid id, jsval *vp)
+static JSBool amity_onEnterFrame_set (JSContext* jsCtx, JSObject* obj, jsid id, jsval *vp)
 {
-    JSFunction* fn = JS_ValueToFunction(ctx, vp[0]);
+    JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
     if (fn == NULL) {
         return JS_FALSE;
     }
 
-    Script* script = static_cast<Script*>(JS_GetContextPrivate(ctx));
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
     script->setOnEnterFrame(fn);
 
     return JS_TRUE;
 }
 
-static JSBool amity_canvas_save (JSContext* ctx, uintN argc, jsval* vp)
+static JSBool amity_canvas_save (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    canvas.save();
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.save();
     return JS_TRUE;
 }
 
-static JSBool amity_canvas_restore (JSContext* ctx, uintN argc, jsval* vp)
+static JSBool amity_canvas_restore (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    canvas.restore();
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.restore();
     return JS_TRUE;
 }
 
-static JSBool amity_canvas_rotate (JSContext* ctx, uintN argc, jsval* vp)
+static JSBool amity_canvas_rotate (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    jsval* argv = JS_ARGV(ctx, vp);
+    jsval* argv = JS_ARGV(jsCtx, vp);
     double angle;
-    if (!JS_ValueToNumber(ctx, argv[0], &angle)) {
+    if (!JS_ValueToNumber(jsCtx, argv[0], &angle)) {
         return JS_FALSE;
     }
 
-    canvas.rotate(angle);
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.rotate(angle);
     return JS_TRUE;
 }
 
-static JSBool amity_canvas_translate (JSContext* ctx, uintN argc, jsval* vp)
+static JSBool amity_canvas_translate (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    jsval* argv = JS_ARGV(ctx, vp);
+    jsval* argv = JS_ARGV(jsCtx, vp);
     double x, y;
-    if (!JS_ValueToNumber(ctx, argv[0], &x) ||
-        !JS_ValueToNumber(ctx, argv[1], &y)) {
+    if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
+        !JS_ValueToNumber(jsCtx, argv[1], &y)) {
         return JS_FALSE;
     }
 
-    canvas.translate(x, y);
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.translate(x, y);
     return JS_TRUE;
 }
 
-static JSBool amity_canvas_drawTestImage (JSContext* ctx, uintN argc, jsval* vp)
+static JSBool amity_canvas_drawTestImage (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    jsval* argv = JS_ARGV(ctx, vp);
+    jsval* argv = JS_ARGV(jsCtx, vp);
     double x, y;
-    if (!JS_ValueToNumber(ctx, argv[0], &x) ||
-        !JS_ValueToNumber(ctx, argv[1], &y)) {
+    if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
+        !JS_ValueToNumber(jsCtx, argv[1], &y)) {
         return JS_FALSE;
     }
 
     Texture fakeTexture = { 0, 60, 60 };
-    canvas.drawImage(&fakeTexture, x, y);
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.drawImage(&fakeTexture, x, y);
     return JS_TRUE;
 }
 
-static void initAmityClasses (JSContext* ctx, JSObject* global)
+static void initAmityClasses (JSContext* jsCtx, JSObject* global)
 {
-    JSObject* amity = JS_NewObject(ctx, NULL, NULL, global);
+    JSObject* amity = JS_NewObject(jsCtx, NULL, NULL, global);
     JSFunctionSpec amityFunctions[] = {
         JS_FS("log", amity_log, 1, 0),
         JS_FS_END
     };
-    JS_DefineFunctions(ctx, amity, amityFunctions);
+    JS_DefineFunctions(jsCtx, amity, amityFunctions);
 
-    JS_DefineProperty(ctx, amity, "onEnterFrame", JSVAL_NULL,
+    JS_DefineProperty(jsCtx, amity, "onEnterFrame", JSVAL_NULL,
         JS_PropertyStub, amity_onEnterFrame_set, 0);
 
-    JSObject* canvas = JS_NewObject(ctx, NULL, NULL, NULL);
+    JSObject* canvas = JS_NewObject(jsCtx, NULL, NULL, NULL);
     JSFunctionSpec canvasFunctions[] = {
         JS_FS("save", amity_canvas_save, 0, 0),
         JS_FS("restore", amity_canvas_restore, 0, 0),
@@ -123,16 +125,16 @@ static void initAmityClasses (JSContext* ctx, JSObject* global)
         JS_FS("drawTestImage", amity_canvas_drawTestImage, 2, 0),
         JS_FS_END
     };
-    JS_DefineFunctions(ctx, canvas, canvasFunctions);
-    JS_DefineProperty(ctx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
+    JS_DefineFunctions(jsCtx, canvas, canvasFunctions);
+    JS_DefineProperty(jsCtx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
 
-    JS_DefineProperty(ctx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
+    JS_DefineProperty(jsCtx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
 }
 
 Script::~Script ()
 {
-    if (_ctx != NULL) {
-        JS_DestroyContext(_ctx);
+    if (_jsCtx != NULL) {
+        JS_DestroyContext(_jsCtx);
     }
 }
 
@@ -146,34 +148,34 @@ int Script::parse (const char* filename, const char* source)
         }
     }
 
-    _ctx = JS_NewContext(rt, 8192);
-    if (_ctx == NULL) {
+    _jsCtx = JS_NewContext(rt, 8192);
+    if (_jsCtx == NULL) {
         return 1;
     }
 
     // Attach 'this' to the context so we can look it up in bound functions
-    JS_SetContextPrivate(_ctx, this);
+    JS_SetContextPrivate(_jsCtx, this);
 
     // TODO: Re-enable JSOPTION_JIT and JSOPTION_METHODJIT when they stop crashing my emulator
-    JS_SetOptions(_ctx,
+    JS_SetOptions(_jsCtx,
         JSOPTION_STRICT |
         JSOPTION_WERROR |
         JSOPTION_VAROBJFIX |
         JSOPTION_NO_SCRIPT_RVAL);
-    JS_SetVersion(_ctx, JSVERSION_ECMA_5);
-    JS_SetErrorReporter(_ctx, scriptReportError);
+    JS_SetVersion(_jsCtx, JSVERSION_ECMA_5);
+    JS_SetErrorReporter(_jsCtx, scriptReportError);
 
-    JSObject* global = JS_NewGlobalObject(_ctx, &scriptClassGlobal);
+    JSObject* global = JS_NewGlobalObject(_jsCtx, &scriptClassGlobal);
     if (global == NULL) {
        return 1;
     }
 
-    if (!JS_InitStandardClasses(_ctx, global)) {
+    if (!JS_InitStandardClasses(_jsCtx, global)) {
        return 1;
     }
-    initAmityClasses(_ctx, global);
+    initAmityClasses(_jsCtx, global);
 
-    JSBool success = JS_EvaluateScript(_ctx, global, source, strlen(source),
+    JSBool success = JS_EvaluateScript(_jsCtx, global, source, strlen(source),
         filename, 0, NULL);
 
     return !success;
@@ -184,9 +186,9 @@ void Script::onEnterFrame (unsigned int dt)
     if (_onEnterFrame != NULL) {
         jsval argv[] = { INT_TO_JSVAL(dt) };
         jsval rval;
-        JS_CallFunction(_ctx, JS_GetGlobalObject(_ctx), _onEnterFrame, 1, argv, &rval);
+        JS_CallFunction(_jsCtx, JS_GetGlobalObject(_jsCtx), _onEnterFrame, 1, argv, &rval);
     }
 
     // TODO: Put this in a separate method?
-    JS_MaybeGC(_ctx);
+    JS_MaybeGC(_jsCtx);
 }

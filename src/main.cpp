@@ -6,14 +6,14 @@
 
 #include "canvas/CanvasContext.h"
 #include "script/Script.h"
+#include "AmityContext.h"
 
 #include "log.h"
 
 // TODO: Test assets are looked up on the sdcard for now, eventually it should read from the APK
 #define ASSET(filename) ("/sdcard/data/" filename)
 
-extern CanvasContext canvas;
-CanvasContext canvas;
+static AmityContext amityCtx;
 
 Uint32 delayFrame ()
 {
@@ -51,8 +51,7 @@ void mainLoop ()
     int x = 0, y = 0;
     Uint32 elapsed = 0;
 
-    Script script;
-    loadScript(&script, ASSET("test.js"));
+    loadScript(&amityCtx.script, ASSET("test.js"));
 
     for (;;) {
         while (SDL_PollEvent(&event)) {
@@ -74,7 +73,7 @@ void mainLoop ()
         // I'm painting textures solid green for now
         glColor4f(0.0, 1.0, 0.0, 1.0);
 
-        script.onEnterFrame(elapsed);
+        amityCtx.script.onEnterFrame(elapsed);
 
         SDL_RenderPresent();
         elapsed = delayFrame();
