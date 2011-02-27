@@ -11,7 +11,7 @@
 #include "log.h"
 #include "assets.h"
 
-static AmityContext amityCtx;
+#define FPS_INTERVAL (5000)
 
 Uint32 delayFrame ()
 {
@@ -43,11 +43,17 @@ void mainLoop ()
 {
     SDL_Event event;
     int x = 0, y = 0;
-    Uint32 elapsed = 0;
 
+    Uint32 fpsFrames = 0;
+    Uint32 fpsTime = 0;
+    Uint32 lastTime = SDL_GetTicks();
+
+    AmityContext amityCtx;
     loadScript(&amityCtx.script, SDCARD("test.js"));
 
     for (;;) {
+        Uint32 startTime = SDL_GetTicks();
+
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_MOUSEMOTION:
@@ -65,10 +71,22 @@ void mainLoop ()
         glClearColor(0.1, 0.1, 0.1, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        Uint32 nowTime = SDL_GetTicks();
+        Uint32 elapsed = nowTime - lastTime;
+        lastTime = nowTime;
+
+        ++fpsFrames;
+        fpsTime += elapsed;
+        if (fpsTime > FPS_INTERVAL) {
+            float fps = 1000 * (float)fpsFrames / fpsTime;
+            LOGI("FPS: %.2f (%i frames in %.2fs)", fps, fpsFrames, (float)fpsTime/1000);
+            fpsTime = 0;
+            fpsFrames = 0;
+        }
         amityCtx.script.onEnterFrame(elapsed);
 
         SDL_RenderPresent();
-        elapsed = delayFrame();
+        delayFrame();
     }
 }
 
