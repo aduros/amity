@@ -13,6 +13,8 @@
 
 #define FPS_INTERVAL (5000)
 
+static SDL_Renderer* renderer;
+
 Uint32 delayFrame ()
 {
     static Uint32 nextTick = 0;
@@ -78,7 +80,7 @@ void mainLoop ()
         }
         amityCtx.script.onEnterFrame(elapsed);
 
-        SDL_RenderPresent();
+        SDL_RenderPresent(renderer);
         delayFrame();
     }
 }
@@ -108,7 +110,8 @@ int main (int argc, char* argv[])
     SDL_GetWindowSize(window, &w, &h);
     LOGI("Created window [width=%i, height=%i]", w, h);
 
-    if (SDL_CreateRenderer(window, 0, 0) < 0) {
+    renderer = SDL_CreateRenderer(window, 0, 0);
+    if (renderer == NULL) {
         LOGE("Unable to create renderer: %s", SDL_GetError());
         return 1;
     }
