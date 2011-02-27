@@ -90,6 +90,20 @@ static JSBool amity_canvas_translate (JSContext* jsCtx, uintN argc, jsval* vp)
     return JS_TRUE;
 }
 
+static JSBool amity_canvas_scale (JSContext* jsCtx, uintN argc, jsval* vp)
+{
+    jsval* argv = JS_ARGV(jsCtx, vp);
+    double x, y;
+    if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
+        !JS_ValueToNumber(jsCtx, argv[1], &y)) {
+        return JS_FALSE;
+    }
+
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.scale(x, y);
+    return JS_TRUE;
+}
+
 static JSBool amity_canvas_drawTestImage (JSContext* jsCtx, uintN argc, jsval* vp)
 {
     jsval* argv = JS_ARGV(jsCtx, vp);
@@ -124,6 +138,7 @@ static void initAmityClasses (JSContext* jsCtx, JSObject* global)
         JS_FS("restore", amity_canvas_restore, 0, 0),
         JS_FS("rotate", amity_canvas_rotate, 1, 0),
         JS_FS("translate", amity_canvas_translate, 2, 0),
+        JS_FS("scale", amity_canvas_scale, 2, 0),
         JS_FS("drawTestImage", amity_canvas_drawTestImage, 2, 0),
         JS_FS_END
     };
