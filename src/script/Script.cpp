@@ -1,5 +1,7 @@
 #include "script/Script.h"
 
+#include "SDL.h"
+
 #define XP_UNIX
 #include "jsapi.h"
 #undef XP_UNIX
@@ -36,7 +38,7 @@ static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
     return JS_TRUE;
 }
 
-static JSBool amity_onEnterFrame_set (JSContext* jsCtx, JSObject* obj, jsid id, jsval *vp)
+static JSBool amity_setOnEnterFrame (JSContext* jsCtx, JSObject* obj, jsid id, jsval *vp)
 {
     JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
     if (fn == NULL) {
@@ -45,6 +47,19 @@ static JSBool amity_onEnterFrame_set (JSContext* jsCtx, JSObject* obj, jsid id, 
 
     Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
     script->setOnEnterFrame(fn);
+
+    return JS_TRUE;
+}
+
+static JSBool amity_setOnMouseMove (JSContext* jsCtx, JSObject* obj, jsid id, jsval *vp)
+{
+    JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
+    if (fn == NULL) {
+        return JS_FALSE;
+    }
+
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->setOnMouseMove(fn);
 
     return JS_TRUE;
 }
@@ -120,6 +135,18 @@ static JSBool amity_canvas_drawTestImage (JSContext* jsCtx, uintN argc, jsval* v
     return JS_TRUE;
 }
 
+static JSBool amity_canvas_setAlpha (JSContext* jsCtx, JSObject* obj, jsid id, jsval *vp)
+{
+    double alpha;
+    if (!JS_ValueToNumber(jsCtx, vp[0], &alpha)) {
+        return JS_FALSE;
+    }
+
+    Script* script = static_cast<Script*>(JS_GetContextPrivate(jsCtx));
+    script->getAmityCtx()->canvas.setAlpha(alpha);
+    return JS_TRUE;
+}
+
 static void initAmityClasses (JSContext* jsCtx, JSObject* global)
 {
     JSObject* amity = JS_NewObject(jsCtx, NULL, NULL, global);
@@ -130,7 +157,9 @@ static void initAmityClasses (JSContext* jsCtx, JSObject* global)
     JS_DefineFunctions(jsCtx, amity, amityFunctions);
 
     JS_DefineProperty(jsCtx, amity, "onEnterFrame", JSVAL_NULL,
-        JS_PropertyStub, amity_onEnterFrame_set, 0);
+        JS_PropertyStub, amity_setOnEnterFrame, 0);
+    JS_DefineProperty(jsCtx, amity, "onMouseMove", JSVAL_NULL,
+        JS_PropertyStub, amity_setOnMouseMove, 0);
 
     JSObject* canvas = JS_NewObject(jsCtx, NULL, NULL, NULL);
     JSFunctionSpec canvasFunctions[] = {
@@ -143,6 +172,8 @@ static void initAmityClasses (JSContext* jsCtx, JSObject* global)
         JS_FS_END
     };
     JS_DefineFunctions(jsCtx, canvas, canvasFunctions);
+    JS_DefineProperty(jsCtx, canvas, "alpha", JSVAL_NULL,
+        JS_PropertyStub, amity_canvas_setAlpha, 0);
     JS_DefineProperty(jsCtx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
 
     JS_DefineProperty(jsCtx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
@@ -208,4 +239,29 @@ void Script::onEnterFrame (unsigned int dt)
 
     // TODO: Put this in a separate method?
     JS_MaybeGC(_jsCtx);
+}
+
+void Script::onEvent (const SDL_Event* event)
+{
+    JSFunction* handler;
+    JSObject* obj;
+
+    switch (event->type) {
+        case SDL_MOUSEMOTION:
+            handler = _onMouseMove;
+            // TODO: Make a TouchEvent JS class
+            obj = JS_NewObject(_jsCtx, NULL, NULL, JS_GetGlobalObject(_jsCtx));
+            JS_DefineProperty(_jsCtx, obj, "x", INT_TO_JSVAL(event->motion.x),
+                JS_PropertyStub, JS_PropertyStub, 0);
+            JS_DefineProperty(_jsCtx, obj, "y", INT_TO_JSVAL(event->motion.y),
+                JS_PropertyStub, JS_PropertyStub, 0);
+            break;
+        default:
+            // Unhandled event
+            return;
+    }
+
+    jsval argv = OBJECT_TO_JSVAL(obj);
+    jsval rval;
+    JS_CallFunction(_jsCtx, JS_GetGlobalObject(_jsCtx), handler, 1, &argv, &rval);
 }

@@ -55,16 +55,9 @@ void mainLoop ()
         Uint32 startTime = SDL_GetTicks();
 
         while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_MOUSEMOTION:
-                    x = event.motion.x;
-                    y = event.motion.y;
-                    //LOGI("Moved to %i,%i", x, y);
-                    break;
-                case SDL_QUIT:
-                    return;
-                default:
-                    LOGI("Unhandled event %i", event.type);
+            amityCtx.script.onEvent(&event);
+            if (event.type == SDL_QUIT) {
+                return;
             }
         }
 

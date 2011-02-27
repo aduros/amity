@@ -3,6 +3,7 @@
 class JSContext;
 class JSFunction;
 class AmityContext;
+union SDL_Event;
 
 class Script
 {
@@ -17,12 +18,20 @@ public:
         _onEnterFrame = fn;
     };
 
+    inline void setOnMouseMove (JSFunction* fn) {
+        _onMouseMove = fn;
+    }
+
     inline AmityContext* getAmityCtx () {
         return _amityCtx;
     };
 
+    void onEvent (const SDL_Event* event);
+
 protected:
     AmityContext* _amityCtx;
     JSContext* _jsCtx;
+
     JSFunction* _onEnterFrame;
+    JSFunction* _onMouseMove;
 };

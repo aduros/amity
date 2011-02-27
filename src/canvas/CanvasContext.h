@@ -13,6 +13,8 @@ struct CanvasState
 class CanvasContext
 {
 public:
+    CanvasContext ();
+
     void save ();
     void restore ();
 
@@ -26,5 +28,5 @@ public:
     void drawImage (const Texture* image, float dx, float dy);
 
 protected:
-    std::stack<CanvasState> state;
+    std::stack<CanvasState> _states;
 };
