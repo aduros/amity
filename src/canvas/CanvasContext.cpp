@@ -50,7 +50,7 @@ void CanvasContext::drawImage (const Texture* texture, float dx, float dy)
 {
     float w = texture->getWidth();
     float h = texture->getHeight();
-    CanvasState& state = _states.top();
+    const CanvasState& state = _states.top();
 
     GLfloat verts[] = {
         dx, dy,
