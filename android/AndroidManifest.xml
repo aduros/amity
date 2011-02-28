@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.libsdl.app"
+      package="com.threerings.amity"
       android:versionCode="1"
       android:versionName="1.0">
     <application android:label="@string/app_name" android:icon="@drawable/icon">
-        <activity android:name="SDLActivity"
+        <activity android:name="AmityActivity"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:label="@string/app_name">
             <intent-filter>

@@ -34,18 +34,10 @@ public class SDLActivity extends Activity {
 
     // Load the .so
     static {
-        //System.loadLibrary("mikmod");
         System.loadLibrary("SDL");
         //System.loadLibrary("SDL_image");
         //System.loadLibrary("SDL_mixer");
         //System.loadLibrary("SDL_ttf");
-
-        System.loadLibrary("nspr4");
-        System.loadLibrary("plc4");
-        System.loadLibrary("plds4");
-        System.loadLibrary("mozjs");
-
-        System.loadLibrary("amity");
     }
 
     // Setup
@@ -108,8 +100,8 @@ public class SDLActivity extends Activity {
 
     // Java functions called from C
 
-    public static void createGLContext() {
-        mSurface.initEGL();
+    public static boolean createGLContext(int majorVersion, int minorVersion) {
+        return mSurface.initEGL(majorVersion, minorVersion);
     }
 
     public static void flipBuffers() {
@@ -358,11 +350,10 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
 
     // EGL functions
-    public boolean initEGL() {
-        Log.v("SDL", "Starting up");
+    public boolean initEGL(int majorVersion, int minorVersion) {
+        Log.v("SDL", "Starting up OpenGL ES " + majorVersion + "." + minorVersion);
 
         try {
-
             EGL10 egl = (EGL10)EGLContext.getEGL();
 
             EGLDisplay dpy = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
@@ -370,20 +361,43 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             int[] version = new int[2];
             egl.eglInitialize(dpy, version);
 
+            int EGL_OPENGL_ES_BIT = 1;
+            int EGL_OPENGL_ES2_BIT = 4;
+            int renderableType = 0;
+            if (majorVersion == 2) {
+                renderableType = EGL_OPENGL_ES2_BIT;
+            } else if (majorVersion == 1) {
+                renderableType = EGL_OPENGL_ES_BIT;
+            }
             int[] configSpec = {
-                    //EGL10.EGL_DEPTH_SIZE,   16,
-                    EGL10.EGL_NONE
+                //EGL10.EGL_DEPTH_SIZE,   16,
+                EGL10.EGL_RENDERABLE_TYPE, renderableType,
+                EGL10.EGL_NONE
             };
             EGLConfig[] configs = new EGLConfig[1];
             int[] num_config = new int[1];
-            egl.eglChooseConfig(dpy, configSpec, configs, 1, num_config);
+            if (!egl.eglChooseConfig(dpy, configSpec, configs, 1, num_config) || num_config[0] == 0) {
+                Log.e("SDL", "No EGL config available");
+                return false;
+            }
             EGLConfig config = configs[0];
 
             EGLContext ctx = egl.eglCreateContext(dpy, config, EGL10.EGL_NO_CONTEXT, null);
+            if (ctx == EGL10.EGL_NO_CONTEXT) {
+                Log.e("SDL", "Couldn't create context");
+                return false;
+            }
 
             EGLSurface surface = egl.eglCreateWindowSurface(dpy, config, this, null);
+            if (surface == EGL10.EGL_NO_SURFACE) {
+                Log.e("SDL", "Couldn't create surface");
+                return false;
+            }
 
-            egl.eglMakeCurrent(dpy, surface, surface, ctx);
+            if (!egl.eglMakeCurrent(dpy, surface, surface, ctx)) {
+                Log.e("SDL", "Couldn't make context current");
+                return false;
+            }
 
             mEGLContext = ctx;
             mEGLDisplay = dpy;
