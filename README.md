@@ -9,6 +9,7 @@ Building
 --------
 
 Requirements:
+
 * Android SDK
 * Android NDK (r5 or higher)
 * Mozilla's [Android NDK r4c](http://ftp.mozilla.org/pub/mozilla.org/mobile/source/android-ndk-r4c-0moz3.tar.bz2), required for now to build Spidermonkey
