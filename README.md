@@ -11,6 +11,7 @@ Requirements
 * Android SDK
 * Android NDK (r5 or higher)
 * Mozilla's [Android NDK r4c](http://ftp.mozilla.org/pub/mozilla.org/mobile/source/android-ndk-r4c-0moz3.tar.bz2), required for now to build Spidermonkey
+* autoconf2.13, to build Spidermonkey (Available in an Ubuntu package of the same name).
 
 Building
 --------
@@ -20,13 +21,13 @@ Building
         git submodule init
         git submodule update
 
-2.  If you intend to use the Android emulator, edit externals/SDL/include/SDL_config_android.h and comment out the following:
+2.  If you intend to use the Android emulator, edit external/SDL/include/SDL_config_android.h and comment out the following:
 
         // #define SDL_VIDEO_RENDER_OGL_ES2 1
 
     The Android emulator doesn't support OpenGLES v2. SDL will soon add a proper fallback to v1, so this is temporary.
 
-3.  Patch externals/mozjs/android-build.sh to point to your directory:
+3.  Patch external/mozjs/android-build.sh to point to your directory:
         
         ANDROID_NDK=/absolute/path/to/android-ndk-r4c
         ANDROID_SDK=/absolute/path/to/android-sdk-linux_86
@@ -35,7 +36,7 @@ Building
 
 4.  Build Spidermonkey:
 
-        cd externals/mozjs
+        cd external/mozjs
         ./android-build.sh
 
 5.  Build Amity with NDK r5:
