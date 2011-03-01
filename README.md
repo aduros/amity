@@ -1,7 +1,7 @@
 Amity
 =====
 
-Amity is a high-level interface between Javascript and mobile phones for cross-platform gaming.
+Amity is a high-level interface between Javascript and mobile phones for games.
 
 It will be possible to use haXe to write games that run on Amity (Android, iPhone) and Flash (Desktop).
 
@@ -9,9 +9,9 @@ Building
 --------
 
 Requirements:
-    - Android SDK
-    - Android NDK (r5 or higher)
-    - Mozilla's Android NDK r4c, required for now to build Spidermonkey. Get it at http://ftp.mozilla.org/pub/mozilla.org/mobile/source/android-ndk-r4c-0moz3.tar.bz2
+* Android SDK
+* Android NDK (r5 or higher)
+* Mozilla's [Android NDK r4c](http://ftp.mozilla.org/pub/mozilla.org/mobile/source/android-ndk-r4c-0moz3.tar.bz2), required for now to build Spidermonkey
 
 1.  Download the SDL and Mozilla submodules:
 
@@ -45,7 +45,7 @@ Requirements:
 6.  Deploy:
 
         ant install
-        ./data.sh    # Pushes the assets directory onto the SDCard. Eventually they'll be read from the APK. If you're running on the emulator, make sure you give it plenty of SD card space.
+        ./data.sh    # Pushes the assets directory onto the SDCard until reading from the APK is supported. If you're running on the emulator, make sure you give it plenty of SD card space.
 
 Then launch the app! You can use 'adb logcat' to show log output of a connected device.
 
