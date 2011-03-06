@@ -20,7 +20,6 @@ protected:
 
     void initAmityClasses ();
 
-    SCRIPT_FUNCTION(amity_canvas_drawTestImage, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_drawTexture, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_restore, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_rotate, jsCtx, argc, vp);

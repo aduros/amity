@@ -25,7 +25,7 @@ public:
     void setAlpha (float alpha);
     void setBlendMode (int blendMode);
 
-    void drawImage (const Texture* image, float dx, float dy);
+    void drawTexture (const Texture* image, float dx, float dy);
 
 protected:
     std::stack<CanvasState> _states;

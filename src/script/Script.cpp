@@ -126,21 +126,6 @@ SCRIPT_FUNCTION (Script::amity_canvas_scale, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::amity_canvas_drawTestImage, jsCtx, argc, vp)
-{
-    jsval* argv = JS_ARGV(jsCtx, vp);
-    double x, y;
-    if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
-        !JS_ValueToNumber(jsCtx, argv[1], &y)) {
-        return JS_FALSE;
-    }
-
-    static Texture* testTexture = Texture::fromAsset(SDCARD("tentacle.bmp"));
-
-    _amityCtx->canvas.drawImage(testTexture, x, y);
-    return JS_TRUE;
-}
-
 SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
 {
     JSObject* textureObj;
@@ -153,7 +138,7 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
     if (texture == NULL) {
         return JS_FALSE;
     }
-    _amityCtx->canvas.drawImage(texture, x, y);
+    _amityCtx->canvas.drawTexture(texture, x, y);
     return JS_TRUE;
 }
 
@@ -192,8 +177,7 @@ void Script::initAmityClasses ()
         JS_FS("rotate", (bindFunction<Script, &Script::amity_canvas_rotate>), 1, 0),
         JS_FS("translate", (bindFunction<Script, &Script::amity_canvas_translate>), 2, 0),
         JS_FS("scale", (bindFunction<Script, &Script::amity_canvas_scale>), 2, 0),
-        JS_FS("drawTestImage", (bindFunction<Script, &Script::amity_canvas_drawTestImage>), 2, 0),
-        JS_FS("drawTexture", (bindFunction<Script, &Script::amity_canvas_drawTexture>), 2, 0),
+        JS_FS("drawTexture", (bindFunction<Script, &Script::amity_canvas_drawTexture>), 3, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, canvas, canvasFunctions);

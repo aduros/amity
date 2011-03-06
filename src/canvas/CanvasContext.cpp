@@ -46,7 +46,7 @@ void CanvasContext::setBlendMode (int blendMode)
 {
 }
 
-void CanvasContext::drawImage (const Texture* texture, float dx, float dy)
+void CanvasContext::drawTexture (const Texture* texture, float dx, float dy)
 {
     float w = texture->getWidth();
     float h = texture->getHeight();
