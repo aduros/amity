@@ -20,19 +20,17 @@ protected:
 
     void initAmityClasses ();
 
-    SCRIPT_FUNCTION(canvasSave, jsCtx, argc, vp);
-    SCRIPT_FUNCTION(canvasRestore, jsCtx, argc, vp);
-    SCRIPT_FUNCTION(canvasRotate, jsCtx, argc, vp);
-    SCRIPT_FUNCTION(canvasTranslate, jsCtx, argc, vp);
-    SCRIPT_FUNCTION(canvasScale, jsCtx, argc, vp);
-    SCRIPT_FUNCTION(canvasDrawTestImage, jsCtx, argc, vp);
-    SCRIPT_FUNCTION(canvasDrawTexture, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_drawTestImage, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_drawTexture, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_restore, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_rotate, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_save, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_scale, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_translate, jsCtx, argc, vp);
 
-    SCRIPT_FUNCTION(createTexture, jsCtx, argc, vp);
-
-    SCRIPT_PROPERTY(setOnEnterFrame, jsCtx, obj, id, vp);
-    SCRIPT_PROPERTY(setOnMouseMove, jsCtx, obj, id, vp);
-    SCRIPT_PROPERTY(setAlpha, jsCtx, obj, id, vp);
+    SCRIPT_PROPERTY(amity_canvas_setAlpha, jsCtx, obj, id, vp);
+    SCRIPT_PROPERTY(amity_setOnEnterFrame, jsCtx, obj, id, vp);
+    SCRIPT_PROPERTY(amity_setOnMouseMove, jsCtx, obj, id, vp);
 
     AmityContext* _amityCtx;
     JSContext* _jsCtx;

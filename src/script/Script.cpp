@@ -51,7 +51,7 @@ static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
     return JS_TRUE;
 }
 
-SCRIPT_PROPERTY (Script::setOnEnterFrame, jsCtx, obj, id, vp)
+SCRIPT_PROPERTY (Script::amity_setOnEnterFrame, jsCtx, obj, id, vp)
 {
     JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
     if (fn == NULL) {
@@ -62,7 +62,7 @@ SCRIPT_PROPERTY (Script::setOnEnterFrame, jsCtx, obj, id, vp)
     return JS_TRUE;
 }
 
-SCRIPT_PROPERTY (Script::setOnMouseMove, jsCtx, obj, id, vp)
+SCRIPT_PROPERTY (Script::amity_setOnMouseMove, jsCtx, obj, id, vp)
 {
     JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
     if (fn == NULL) {
@@ -73,19 +73,19 @@ SCRIPT_PROPERTY (Script::setOnMouseMove, jsCtx, obj, id, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasSave, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_save, jsCtx, argc, vp)
 {
     _amityCtx->canvas.save();
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasRestore, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_restore, jsCtx, argc, vp)
 {
     _amityCtx->canvas.restore();
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasRotate, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_rotate, jsCtx, argc, vp)
 {
     jsval* argv = JS_ARGV(jsCtx, vp);
     double angle;
@@ -97,7 +97,7 @@ SCRIPT_FUNCTION (Script::canvasRotate, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasTranslate, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_translate, jsCtx, argc, vp)
 {
     jsval* argv = JS_ARGV(jsCtx, vp);
     double x, y;
@@ -113,7 +113,7 @@ SCRIPT_FUNCTION (Script::canvasTranslate, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasScale, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_scale, jsCtx, argc, vp)
 {
     jsval* argv = JS_ARGV(jsCtx, vp);
     double x, y;
@@ -126,7 +126,7 @@ SCRIPT_FUNCTION (Script::canvasScale, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasDrawTestImage, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_drawTestImage, jsCtx, argc, vp)
 {
     jsval* argv = JS_ARGV(jsCtx, vp);
     double x, y;
@@ -141,7 +141,7 @@ SCRIPT_FUNCTION (Script::canvasDrawTestImage, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::canvasDrawTexture, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
 {
     JSObject* textureObj;
     double x, y;
@@ -157,7 +157,7 @@ SCRIPT_FUNCTION (Script::canvasDrawTexture, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_PROPERTY (Script::setAlpha, jsCtx, obj, id, vp)
+SCRIPT_PROPERTY (Script::amity_canvas_setAlpha, jsCtx, obj, id, vp)
 {
     double alpha;
     if (!JS_ValueToNumber(jsCtx, vp[0], &alpha)) {
@@ -181,24 +181,24 @@ void Script::initAmityClasses ()
     JS_DefineFunctions(_jsCtx, amity, amityFunctions);
 
     JS_DefineProperty(_jsCtx, amity, "onEnterFrame", JSVAL_NULL,
-        JS_PropertyStub, bindProperty<Script, &Script::setOnEnterFrame>, 0);
+        JS_PropertyStub, bindProperty<Script, &Script::amity_setOnEnterFrame>, 0);
     JS_DefineProperty(_jsCtx, amity, "onMouseMove", JSVAL_NULL,
-        JS_PropertyStub, bindProperty<Script, &Script::setOnMouseMove>, 0);
+        JS_PropertyStub, bindProperty<Script, &Script::amity_setOnMouseMove>, 0);
 
     JSObject* canvas = JS_NewObject(_jsCtx, NULL, NULL, NULL);
     JSFunctionSpec canvasFunctions[] = {
-        JS_FS("save", (bindFunction<Script, &Script::canvasSave>), 1, 0),
-        JS_FS("restore", (bindFunction<Script, &Script::canvasRestore>), 1, 0),
-        JS_FS("rotate", (bindFunction<Script, &Script::canvasRotate>), 1, 0),
-        JS_FS("translate", (bindFunction<Script, &Script::canvasTranslate>), 2, 0),
-        JS_FS("scale", (bindFunction<Script, &Script::canvasScale>), 2, 0),
-        JS_FS("drawTestImage", (bindFunction<Script, &Script::canvasDrawTestImage>), 2, 0),
-        JS_FS("drawTexture", (bindFunction<Script, &Script::canvasDrawTexture>), 2, 0),
+        JS_FS("save", (bindFunction<Script, &Script::amity_canvas_save>), 1, 0),
+        JS_FS("restore", (bindFunction<Script, &Script::amity_canvas_restore>), 1, 0),
+        JS_FS("rotate", (bindFunction<Script, &Script::amity_canvas_rotate>), 1, 0),
+        JS_FS("translate", (bindFunction<Script, &Script::amity_canvas_translate>), 2, 0),
+        JS_FS("scale", (bindFunction<Script, &Script::amity_canvas_scale>), 2, 0),
+        JS_FS("drawTestImage", (bindFunction<Script, &Script::amity_canvas_drawTestImage>), 2, 0),
+        JS_FS("drawTexture", (bindFunction<Script, &Script::amity_canvas_drawTexture>), 2, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, canvas, canvasFunctions);
     JS_DefineProperty(_jsCtx, canvas, "alpha", JSVAL_NULL,
-        JS_PropertyStub, bindProperty<Script, &Script::setAlpha>, 0);
+        JS_PropertyStub, bindProperty<Script, &Script::amity_canvas_setAlpha>, 0);
     JS_DefineProperty(_jsCtx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
 
     JS_DefineProperty(_jsCtx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
