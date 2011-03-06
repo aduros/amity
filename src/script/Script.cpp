@@ -3,8 +3,18 @@
 #include "SDL.h"
 
 #include "AmityContext.h"
-#include "log.h"
 #include "assets.h"
+#include "log.h"
+#include "script/TextureObject.h"
+
+static JSRuntime* rt = NULL;
+
+static JSClass classGlobal = {
+    "global", JSCLASS_GLOBAL_FLAGS,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+    JSCLASS_NO_OPTIONAL_MEMBERS
+};
 
 template <class T, JSBool (T::*fn)(JSContext*, uintN, jsval*)>
 static JSBool bindFunction (JSContext* jsCtx, uintN argc, jsval* vp)
@@ -19,14 +29,6 @@ static JSBool bindProperty (JSContext* jsCtx, JSObject* obj, jsid id, jsval* vp)
     T* self = static_cast<T*>(JS_GetContextPrivate(jsCtx));
     return (self->*fn)(jsCtx, obj, id, vp);
 }
-
-static JSRuntime* rt = NULL;
-static JSClass scriptClassGlobal = {
-    "global", JSCLASS_GLOBAL_FLAGS,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-    JSCLASS_NO_OPTIONAL_MEMBERS
-};
 
 static void scriptReportError (JSContext* jsCtx, const char* message, JSErrorReport* report)
 {
@@ -43,6 +45,7 @@ static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
         return JS_FALSE;
     }
 
+    // TODO: Is this encode necessary?
     LOGI("amity.log() -> %s", JS_EncodeString(jsCtx, message));
 
     return JS_TRUE;
@@ -98,6 +101,9 @@ SCRIPT_FUNCTION (Script::canvasTranslate, jsCtx, argc, vp)
 {
     jsval* argv = JS_ARGV(jsCtx, vp);
     double x, y;
+    //if (!JS_ConvertArgumentsVA(jsCtx, 2, JS_ARGV(jsCtx, vp), "dd", &x, &y)) {
+    //    return JS_FALSE;
+    //}
     if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
         !JS_ValueToNumber(jsCtx, argv[1], &y)) {
         return JS_FALSE;
@@ -135,6 +141,22 @@ SCRIPT_FUNCTION (Script::canvasDrawTestImage, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
+SCRIPT_FUNCTION (Script::canvasDrawTexture, jsCtx, argc, vp)
+{
+    JSObject* textureObj;
+    double x, y;
+    if (!JS_ConvertArguments(jsCtx, 3, JS_ARGV(jsCtx, vp), "odd", &textureObj, &x, &y)) {
+        return JS_FALSE;
+    }
+
+    Texture* texture = getTextureFromObject(jsCtx, textureObj);
+    if (texture == NULL) {
+        return JS_FALSE;
+    }
+    _amityCtx->canvas.drawImage(texture, x, y);
+    return JS_TRUE;
+}
+
 SCRIPT_PROPERTY (Script::setAlpha, jsCtx, obj, id, vp)
 {
     double alpha;
@@ -150,9 +172,10 @@ void Script::initAmityClasses ()
 {
     JSObject* global = JS_GetGlobalObject(_jsCtx);
 
-    JSObject* amity = JS_NewObject(_jsCtx, NULL, NULL, global);
+    JSObject* amity = JS_NewObject(_jsCtx, NULL, NULL, NULL);
     JSFunctionSpec amityFunctions[] = {
         JS_FS("log", amity_log, 1, 0),
+        JS_FS("createTexture", amity_createTexture, 1, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, amity, amityFunctions);
@@ -170,6 +193,7 @@ void Script::initAmityClasses ()
         JS_FS("translate", (bindFunction<Script, &Script::canvasTranslate>), 2, 0),
         JS_FS("scale", (bindFunction<Script, &Script::canvasScale>), 2, 0),
         JS_FS("drawTestImage", (bindFunction<Script, &Script::canvasDrawTestImage>), 2, 0),
+        JS_FS("drawTexture", (bindFunction<Script, &Script::canvasDrawTexture>), 2, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, canvas, canvasFunctions);
@@ -214,7 +238,7 @@ int Script::parse (const char* filename, const char* source)
     JS_SetVersion(_jsCtx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_jsCtx, scriptReportError);
 
-    JSObject* global = JS_NewGlobalObject(_jsCtx, &scriptClassGlobal);
+    JSObject* global = JS_NewGlobalObject(_jsCtx, &classGlobal);
     if (global == NULL) {
        return 1;
     }

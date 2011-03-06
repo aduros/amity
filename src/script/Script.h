@@ -1,16 +1,9 @@
 #pragma once
 
-#define XP_UNIX
-#include "jsapi.h"
-#undef XP_UNIX
+#include "script/util.h"
 
-class JSContext;
-class JSFunction;
 class AmityContext;
 union SDL_Event;
-
-#define SCRIPT_FUNCTION(fn,jsCtx,argc,vp) JSBool fn (JSContext* jsCtx, uintN argc, jsval* vp)
-#define SCRIPT_PROPERTY(fn,jsCtx,obj,id,vp) JSBool fn (JSContext* jsCtx, JSObject* obj, jsid id, jsval* vp)
 
 class Script
 {
@@ -33,6 +26,9 @@ protected:
     SCRIPT_FUNCTION(canvasTranslate, jsCtx, argc, vp);
     SCRIPT_FUNCTION(canvasScale, jsCtx, argc, vp);
     SCRIPT_FUNCTION(canvasDrawTestImage, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(canvasDrawTexture, jsCtx, argc, vp);
+
+    SCRIPT_FUNCTION(createTexture, jsCtx, argc, vp);
 
     SCRIPT_PROPERTY(setOnEnterFrame, jsCtx, obj, id, vp);
     SCRIPT_PROPERTY(setOnMouseMove, jsCtx, obj, id, vp);
