@@ -13,4 +13,3 @@ static void finalize (JSContext* jsCtx, JSObject* obj)
 {
     delete static_cast<T*>(JS_GetPrivate(jsCtx, obj));
 }
-

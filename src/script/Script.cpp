@@ -186,6 +186,8 @@ void Script::initAmityClasses ()
     JS_DefineProperty(_jsCtx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
 
     JS_DefineProperty(_jsCtx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
+
+    initTextureObject(_jsCtx);
 }
 
 Script::~Script ()
@@ -198,7 +200,6 @@ Script::~Script ()
 int Script::parse (const char* filename, const char* source)
 {
     if (rt == NULL) {
-        LOGI("Creating runtime");
         rt = JS_NewRuntime(8L * 1024L * 1024L);
         if (rt == NULL) {
             return 1;
