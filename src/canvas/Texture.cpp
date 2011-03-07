@@ -2,6 +2,7 @@
 
 #include "SDL_video.h"
 #include "SDL_opengles.h"
+#include "SDL_image.h"
 
 #include "assets.h"
 #include "log.h"
@@ -19,7 +20,7 @@ Texture* Texture::fromAsset (const char* assetName)
 {
     int bpp;
     Uint32 maskR, maskG, maskB, maskA;
-    SDL_Surface* surface = SDL_LoadBMP_RW(loadAsset(assetName), 1);
+    SDL_Surface* surface = IMG_Load_RW(loadAsset(assetName), 1);
 
     if (surface == NULL) {
         LOGW("Couldn't load texture: %s", SDL_GetError());

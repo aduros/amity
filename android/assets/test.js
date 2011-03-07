@@ -2,6 +2,11 @@ $amity.log("Hello world!");
 
 var mouseX = 0;
 var mouseY = 0;
+var bogartTexture = $amity.createTexture("/sdcard/data/bogart.png");
+var tentacleTexture = $amity.createTexture("/sdcard/data/tentacle.png");
+var manTexture = $amity.createTexture("/sdcard/data/man.png");
+
+//$amity.log("Loaded texture with size: " + texture.width + "x" + texture.height);
 
 $amity.onMouseMove = function (event) {
     mouseX = event.x;
@@ -18,8 +23,8 @@ $amity.onEnterFrame = function (dt) {
         var y = n % 480;
 
         //$amity.canvas.alpha = (Math.sin(elapsed/1000)+1)/2;
-        $amity.canvas.drawTestImage(x, y);
+        $amity.canvas.drawTexture(bogartTexture, x, y);
     }
 
-    $amity.canvas.drawTestImage(mouseX-32, mouseY-32);
+    $amity.canvas.drawTexture(manTexture, mouseX, mouseY);
 };
