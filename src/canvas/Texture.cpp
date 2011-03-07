@@ -35,15 +35,16 @@ Texture* Texture::fromAsset (const char* assetName)
     SDL_BlitSurface(surface, NULL, surface8888, NULL);
 
     Texture* texture = new Texture();
-    texture->_width = nextPowerOfTwo(surface->w);
-    texture->_height = nextPowerOfTwo(surface->h);
+    texture->_width = surface->w;
+    texture->_height = surface->h;
 
     glEnable(GL_TEXTURE_2D);
     glGenTextures(1, &texture->_id);
     glBindTexture(GL_TEXTURE_2D, texture->_id);
 
     // Create the texture in OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->_width, texture->_height,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+        nextPowerOfTwo(texture->_width), nextPowerOfTwo(texture->_height),
         0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
