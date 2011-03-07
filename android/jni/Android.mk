@@ -25,7 +25,7 @@ LOCAL_SRC_FILES := \
     src/canvas/CanvasContext.cpp \
     src/canvas/Texture.cpp \
     src/script/Script.cpp \
-    src/script/TextureObject.cpp \
+    src/script/TextureHandle.cpp \
     external/SDL/src/main/android/SDL_android_main.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL SDL_image nspr4 plc4 plds4 mozjs

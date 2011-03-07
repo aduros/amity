@@ -5,7 +5,7 @@
 #include "AmityContext.h"
 #include "assets.h"
 #include "log.h"
-#include "script/TextureObject.h"
+#include "script/TextureHandle.h"
 
 static JSRuntime* rt = NULL;
 
@@ -134,11 +134,11 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
         return JS_FALSE;
     }
 
-    Texture* texture = getTextureFromObject(jsCtx, textureObj);
-    if (texture == NULL) {
+    TextureHandle* textureHandle = TextureHandle::getFrom(jsCtx, textureObj);
+    if (textureHandle == NULL) {
         return JS_FALSE;
     }
-    _amityCtx->canvas.drawTexture(texture, x, y);
+    _amityCtx->canvas.drawTexture(textureHandle->getTexture(), x, y);
     return JS_TRUE;
 }
 
@@ -187,7 +187,7 @@ void Script::initAmityClasses ()
 
     JS_DefineProperty(_jsCtx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
 
-    initTextureObject(_jsCtx);
+    TextureHandle::init(_jsCtx);
 }
 
 Script::~Script ()

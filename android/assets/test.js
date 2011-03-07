@@ -3,10 +3,10 @@ $amity.log("Hello world!");
 var mouseX = 0;
 var mouseY = 0;
 var bogartTexture = $amity.createTexture("/sdcard/data/bogart.png");
+$amity.log("Loaded texture with size: " + bogartTexture.width + " by " + bogartTexture.height);
+
 var tentacleTexture = $amity.createTexture("/sdcard/data/tentacle.png");
 var manTexture = $amity.createTexture("/sdcard/data/man.png");
-
-//$amity.log("Loaded texture with size: " + texture.width + "x" + texture.height);
 
 $amity.onMouseMove = function (event) {
     mouseX = event.x;
