@@ -40,14 +40,12 @@ static void scriptReportError (JSContext* jsCtx, const char* message, JSErrorRep
 
 static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    JSString* message;
-    if (!JS_ConvertArguments(jsCtx, argc, JS_ARGV(jsCtx, vp), "S", &message)) {
+    const char* message;
+    if (!JS_ConvertArguments(jsCtx, argc, JS_ARGV(jsCtx, vp), "s", &message)) {
         return JS_FALSE;
     }
 
-    // TODO: Is this encode necessary?
-    LOGI("amity.log() -> %s", JS_EncodeString(jsCtx, message));
-
+    LOGI("--> %s", message);
     return JS_TRUE;
 }
 
@@ -87,9 +85,8 @@ SCRIPT_FUNCTION (Script::amity_canvas_restore, jsCtx, argc, vp)
 
 SCRIPT_FUNCTION (Script::amity_canvas_rotate, jsCtx, argc, vp)
 {
-    jsval* argv = JS_ARGV(jsCtx, vp);
-    double angle;
-    if (!JS_ValueToNumber(jsCtx, argv[0], &angle)) {
+    jsdouble angle;
+    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "d", &angle)) {
         return JS_FALSE;
     }
 
@@ -99,13 +96,8 @@ SCRIPT_FUNCTION (Script::amity_canvas_rotate, jsCtx, argc, vp)
 
 SCRIPT_FUNCTION (Script::amity_canvas_translate, jsCtx, argc, vp)
 {
-    jsval* argv = JS_ARGV(jsCtx, vp);
-    double x, y;
-    //if (!JS_ConvertArgumentsVA(jsCtx, 2, JS_ARGV(jsCtx, vp), "dd", &x, &y)) {
-    //    return JS_FALSE;
-    //}
-    if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
-        !JS_ValueToNumber(jsCtx, argv[1], &y)) {
+    jsdouble x, y;
+    if (!JS_ConvertArguments(jsCtx, 2, JS_ARGV(jsCtx, vp), "dd", &x, &y)) {
         return JS_FALSE;
     }
 
@@ -115,10 +107,8 @@ SCRIPT_FUNCTION (Script::amity_canvas_translate, jsCtx, argc, vp)
 
 SCRIPT_FUNCTION (Script::amity_canvas_scale, jsCtx, argc, vp)
 {
-    jsval* argv = JS_ARGV(jsCtx, vp);
-    double x, y;
-    if (!JS_ValueToNumber(jsCtx, argv[0], &x) ||
-        !JS_ValueToNumber(jsCtx, argv[1], &y)) {
+    jsdouble x, y;
+    if (!JS_ConvertArguments(jsCtx, 2, JS_ARGV(jsCtx, vp), "dd", &x, &y)) {
         return JS_FALSE;
     }
 
@@ -129,7 +119,7 @@ SCRIPT_FUNCTION (Script::amity_canvas_scale, jsCtx, argc, vp)
 SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
 {
     JSObject* textureObj;
-    double x, y;
+    jsdouble x, y;
     if (!JS_ConvertArguments(jsCtx, 3, JS_ARGV(jsCtx, vp), "odd", &textureObj, &x, &y)) {
         return JS_FALSE;
     }
@@ -144,8 +134,8 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
 
 SCRIPT_PROPERTY (Script::amity_canvas_setAlpha, jsCtx, obj, id, vp)
 {
-    double alpha;
-    if (!JS_ValueToNumber(jsCtx, vp[0], &alpha)) {
+    jsdouble alpha;
+    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "d", &alpha)) {
         return JS_FALSE;
     }
 
