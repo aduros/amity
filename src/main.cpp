@@ -14,6 +14,7 @@
 #define FPS_INTERVAL (5000)
 
 static SDL_Renderer* renderer;
+static AmityContext amityCtx;
 
 Uint32 delayFrame ()
 {
@@ -50,7 +51,6 @@ void mainLoop ()
     Uint32 fpsTime = 0;
     Uint32 lastTime = SDL_GetTicks();
 
-    AmityContext amityCtx;
     loadScript(&amityCtx.script, SDCARD("test.js"));
 
     for (;;) {
@@ -105,6 +105,7 @@ int main (int argc, char* argv[])
         LOGE("Unable to create window: %s", SDL_GetError());
         return 1;
     }
+    amityCtx.window = window;
 
     int w, h;
     SDL_GetWindowSize(window, &w, &h);

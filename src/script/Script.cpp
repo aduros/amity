@@ -161,6 +161,14 @@ void Script::initAmityClasses ()
         JS_PropertyStub, bindProperty<Script, &Script::amity_setOnMouseMove>, 0);
 
     JSObject* canvas = JS_NewObject(_jsCtx, NULL, NULL, NULL);
+    int screenWidth, screenHeight;
+    SDL_GetWindowSize(_amityCtx->window, &screenWidth, &screenHeight);
+    JSConstDoubleSpec amityConstants[] = {
+        { screenWidth, "WIDTH", 0, { 0, 0, 0 } },
+        { screenHeight, "HEIGHT", 0, { 0, 0, 0 } },
+        { 0, NULL, 0, { 0, 0, 0 } },
+    };
+    JS_DefineConstDoubles(_jsCtx, canvas, amityConstants);
     JSFunctionSpec canvasFunctions[] = {
         JS_FS("save", (bindFunction<Script, &Script::amity_canvas_save>), 1, 0),
         JS_FS("restore", (bindFunction<Script, &Script::amity_canvas_restore>), 1, 0),
