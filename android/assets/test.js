@@ -8,6 +8,8 @@ $amity.log("Loaded texture with size: " + bogartTexture.width + " by " + bogartT
 var tentacleTexture = $amity.createTexture("/sdcard/data/tentacle.png");
 var manTexture = $amity.createTexture("/sdcard/data/man.png");
 
+$amity.log("JS sees the screen is " + $amity.canvas.WIDTH + " by " + $amity.canvas.HEIGHT);
+
 $amity.onMouseMove = function (event) {
     mouseX = event.x;
     mouseY = event.y;
@@ -19,12 +21,21 @@ $amity.onEnterFrame = function (dt) {
 
     for (var ii = 0; ii < 5; ++ii) {
         var n = 0.1 * elapsed + 1000*ii;
-        var x = n % 320;
-        var y = n % 480;
+        var x = n % $amity.canvas.WIDTH;
+        var y = n % $amity.canvas.HEIGHT;
 
         //$amity.canvas.alpha = (Math.sin(elapsed/1000)+1)/2;
-        $amity.canvas.drawTexture(bogartTexture, x, y);
+        $amity.canvas.save();
+        $amity.canvas.translate(x, y);
+        var scale = 0.25*Math.sin(0.1*n) + 1;
+        $amity.canvas.scale(scale, scale);
+        $amity.canvas.drawTexture(bogartTexture, 0, 0);
+        $amity.canvas.restore();
     }
 
-    $amity.canvas.drawTexture(manTexture, mouseX, mouseY);
+    $amity.canvas.save();
+    $amity.canvas.translate(mouseX, mouseY);
+    $amity.canvas.rotate(180*Math.sin(0.001*elapsed) + 180);
+    $amity.canvas.drawTexture(manTexture, -0.5*manTexture.width, -0.5*manTexture.height);
+    $amity.canvas.restore();
 };
