@@ -214,7 +214,6 @@ int Script::parse (const char* filename, const char* source)
 
     // TODO: Re-enable JSOPTION_JIT and JSOPTION_METHODJIT when they stop crashing my emulator
     JS_SetOptions(_jsCtx,
-        JSOPTION_STRICT |
         JSOPTION_WERROR |
         JSOPTION_VAROBJFIX |
         JSOPTION_NO_SCRIPT_RVAL);
