@@ -212,10 +212,10 @@ int Script::parse (const char* filename, const char* source)
     // Attach 'this' to the context so we can look it up in bound functions
     JS_SetContextPrivate(_jsCtx, this);
 
-    // TODO: Re-enable JSOPTION_JIT and JSOPTION_METHODJIT when they stop crashing my emulator
     JS_SetOptions(_jsCtx,
         JSOPTION_WERROR |
         JSOPTION_VAROBJFIX |
+        JSOPTION_JIT | JSOPTION_METHODJIT |
         JSOPTION_NO_SCRIPT_RVAL);
     JS_SetVersion(_jsCtx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_jsCtx, scriptReportError);
