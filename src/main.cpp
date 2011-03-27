@@ -36,9 +36,11 @@ void loadScript (Script* script, const char *filename)
     // TODO: C++ stream IO
     char buffer[500 * 1024];
     SDL_RWops* asset = loadAsset(filename);
+    if (asset == NULL) {
+        exit(1);
+    }
     int r = SDL_RWread(asset, buffer, sizeof(char), sizeof(buffer));
     buffer[r] = '\0';
-
     script->parse(filename, buffer);
 }
 
@@ -51,7 +53,7 @@ void mainLoop ()
     Uint32 fpsTime = 0;
     Uint32 lastTime = SDL_GetTicks();
 
-    loadScript(&amityCtx.script, SDCARD("test.js"));
+    loadScript(&amityCtx.script, "app.js");
 
     for (;;) {
         Uint32 startTime = SDL_GetTicks();

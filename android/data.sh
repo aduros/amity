@@ -1,3 +1,3 @@
 #!/bin/sh
 
-adb push assets /sdcard/data
+adb push assets /sdcard/amity-dev
