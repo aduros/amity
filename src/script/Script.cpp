@@ -183,7 +183,7 @@ void Script::initAmityClasses ()
         JS_PropertyStub, bindProperty<Script, &Script::amity_canvas_setAlpha>, 0);
     JS_DefineProperty(_jsCtx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
 
-    JS_DefineProperty(_jsCtx, global, "$amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
+    JS_DefineProperty(_jsCtx, global, "__amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
 
     TextureHandle::init(_jsCtx);
 }
@@ -241,7 +241,13 @@ void Script::onEnterFrame (unsigned int dt)
     if (_onEnterFrame != NULL) {
         jsval argv[] = { INT_TO_JSVAL(dt) };
         jsval rval;
-        JS_CallFunction(_jsCtx, JS_GetGlobalObject(_jsCtx), _onEnterFrame, 1, argv, &rval);
+        jsval amity;
+        JS_GetProperty(_jsCtx, JS_GetGlobalObject(_jsCtx), "__amity", &amity);
+        JS_CallFunctionName(_jsCtx, JSVAL_TO_OBJECT(amity), "onEnterFrame", 1, argv, &rval);
+
+        //JS_CallFunctionName(_jsCtx,
+        //    JS_GetGlobalObject(_jsCtx),
+        //    OBJECT_TO_JSVAL(JS_GetFunctionObject(_onEnterFrame)), 1, argv, &rval);
     }
 
     // TODO: Put this in a separate method?
