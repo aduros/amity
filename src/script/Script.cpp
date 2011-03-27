@@ -32,7 +32,7 @@ static JSBool bindProperty (JSContext* jsCtx, JSObject* obj, jsid id, jsval* vp)
 
 static void scriptReportError (JSContext* jsCtx, const char* message, JSErrorReport* report)
 {
-    LOGW("%s:%u:%s\n",
+    LOGW("%s:%u %s\n",
         report->filename ? report->filename : "<no filename>",
         (unsigned int) report->lineno,
         message);
