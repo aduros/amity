@@ -10,13 +10,24 @@ var manTexture = __amity.createTexture("man.png");
 
 __amity.log("JS sees the screen is " + __amity.canvas.WIDTH + " by " + __amity.canvas.HEIGHT);
 
-__amity.onMouseMove = function (event) {
+__amity.events.onMouseMove = function (event) {
     mouseX = event.x;
     mouseY = event.y;
+    //__amity.log("delta: " + event.deltaX + ", " + event.deltaY);
+};
+
+__amity.events.onMouseDown = function (event) {
+    __amity.log("Called onMouseDown");
+    __amity.log("Button: " + event.button);
+};
+
+__amity.events.onMouseUp = function (event) {
+    __amity.log("Called onMouseUp");
+    __amity.log("Button: " + event.button);
 };
 
 var elapsed = 0;
-__amity.onEnterFrame = function (dt) {
+__amity.events.onEnterFrame = function (dt) {
     elapsed += dt;
 
     for (var ii = 0; ii < 5; ++ii) {

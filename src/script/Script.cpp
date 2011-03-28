@@ -49,28 +49,6 @@ static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
     return JS_TRUE;
 }
 
-SCRIPT_PROPERTY (Script::amity_setOnEnterFrame, jsCtx, obj, id, vp)
-{
-    JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
-    if (fn == NULL) {
-        return JS_FALSE;
-    }
-
-    _onEnterFrame = fn;
-    return JS_TRUE;
-}
-
-SCRIPT_PROPERTY (Script::amity_setOnMouseMove, jsCtx, obj, id, vp)
-{
-    JSFunction* fn = JS_ValueToFunction(jsCtx, vp[0]);
-    if (fn == NULL) {
-        return JS_FALSE;
-    }
-
-    _onMouseMove = fn;
-    return JS_TRUE;
-}
-
 SCRIPT_FUNCTION (Script::amity_canvas_save, jsCtx, argc, vp)
 {
     _amityCtx->canvas.save();
@@ -143,11 +121,17 @@ SCRIPT_PROPERTY (Script::amity_canvas_setAlpha, jsCtx, obj, id, vp)
     return JS_TRUE;
 }
 
+static jsid getInternedId (JSContext* jsCtx, const char* name)
+{
+    JSString* str = JS_InternString(jsCtx, name);
+    return INTERNED_STRING_TO_JSID(JS_InternString(jsCtx, name));
+}
+
 void Script::initAmityClasses ()
 {
     JSObject* global = JS_GetGlobalObject(_jsCtx);
 
-    JSObject* amity = JS_NewObject(_jsCtx, NULL, NULL, NULL);
+    JSObject* amity = JS_DefineObject(_jsCtx, global, "__amity", NULL, NULL, 0);
     JSFunctionSpec amityFunctions[] = {
         JS_FS("log", amity_log, 1, 0),
         JS_FS("createTexture", amity_createTexture, 1, 0),
@@ -155,12 +139,14 @@ void Script::initAmityClasses ()
     };
     JS_DefineFunctions(_jsCtx, amity, amityFunctions);
 
-    JS_DefineProperty(_jsCtx, amity, "onEnterFrame", JSVAL_NULL,
-        JS_PropertyStub, bindProperty<Script, &Script::amity_setOnEnterFrame>, 0);
-    JS_DefineProperty(_jsCtx, amity, "onMouseMove", JSVAL_NULL,
-        JS_PropertyStub, bindProperty<Script, &Script::amity_setOnMouseMove>, 0);
+    _eventObj = JS_DefineObject(_jsCtx, amity, "events", NULL, NULL, 0);
+    _onEnterFrame = getInternedId(_jsCtx, "onEnterFrame");
+    _onMouseDown = getInternedId(_jsCtx, "onMouseDown");
+    _onMouseMove = getInternedId(_jsCtx, "onMouseMove");
+    _onMouseUp = getInternedId(_jsCtx, "onMouseUp");
 
-    JSObject* canvas = JS_NewObject(_jsCtx, NULL, NULL, NULL);
+    JSObject* canvas = JS_DefineObject(_jsCtx, amity, "canvas",
+        NULL, NULL, JSPROP_READONLY | JSPROP_PERMANENT);
     int screenWidth, screenHeight;
     SDL_GetWindowSize(_amityCtx->window, &screenWidth, &screenHeight);
     JSConstDoubleSpec amityConstants[] = {
@@ -181,10 +167,8 @@ void Script::initAmityClasses ()
     JS_DefineFunctions(_jsCtx, canvas, canvasFunctions);
     JS_DefineProperty(_jsCtx, canvas, "alpha", JSVAL_NULL,
         JS_PropertyStub, bindProperty<Script, &Script::amity_canvas_setAlpha>, 0);
-    JS_DefineProperty(_jsCtx, amity, "canvas", OBJECT_TO_JSVAL(canvas), NULL, NULL, 0);
 
-    JS_DefineProperty(_jsCtx, global, "__amity", OBJECT_TO_JSVAL(amity), NULL, NULL, 0);
-
+    // Init all handles
     TextureHandle::init(_jsCtx);
 }
 
@@ -238,43 +222,59 @@ int Script::parse (const char* filename, const char* source)
 
 void Script::onEnterFrame (unsigned int dt)
 {
-    if (_onEnterFrame != NULL) {
-        jsval argv[] = { INT_TO_JSVAL(dt) };
-        jsval rval;
-        jsval amity;
-        JS_GetProperty(_jsCtx, JS_GetGlobalObject(_jsCtx), "__amity", &amity);
-        JS_CallFunctionName(_jsCtx, JSVAL_TO_OBJECT(amity), "onEnterFrame", 1, argv, &rval);
-
-        //JS_CallFunctionName(_jsCtx,
-        //    JS_GetGlobalObject(_jsCtx),
-        //    OBJECT_TO_JSVAL(JS_GetFunctionObject(_onEnterFrame)), 1, argv, &rval);
+    jsval fval;
+    if (!JS_GetPropertyById(_jsCtx, _eventObj, _onEnterFrame, &fval)) {
+        return;
     }
 
-    // TODO: Put this in a separate method?
+    jsval argv[] = { INT_TO_JSVAL(dt) };
+    jsval rval;
+    JS_CallFunctionValue(_jsCtx, _eventObj, fval, sizeof(argv), argv, &rval);
+
+    // TODO: Do we need to call this every frame?
     JS_MaybeGC(_jsCtx);
+}
+
+static JSObject* createMouseEvent (JSContext* jsCtx, int x, int y)
+{
+    JSObject* event = JS_NewObject(jsCtx, NULL, NULL, JS_GetGlobalObject(jsCtx));
+    JS_DefineProperty(jsCtx, event, "x", INT_TO_JSVAL(x),
+        JS_PropertyStub, JS_PropertyStub, 0);
+    JS_DefineProperty(jsCtx, event, "y", INT_TO_JSVAL(y),
+        JS_PropertyStub, JS_PropertyStub, 0);
+    return event;
 }
 
 void Script::onEvent (const SDL_Event* event)
 {
-    JSFunction* handler;
+    jsid handler;
     JSObject* obj;
 
     switch (event->type) {
+        case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
+            handler = (event->type == SDL_MOUSEBUTTONDOWN) ? _onMouseDown : _onMouseUp;
+            obj = createMouseEvent(_jsCtx, event->button.x, event->button.y);
+            JS_DefineProperty(_jsCtx, obj, "button", INT_TO_JSVAL(event->button.button),
+                JS_PropertyStub, JS_PropertyStub, 0);
+            break;
         case SDL_MOUSEMOTION:
             handler = _onMouseMove;
-            // TODO: Make a TouchEvent JS class
-            obj = JS_NewObject(_jsCtx, NULL, NULL, JS_GetGlobalObject(_jsCtx));
-            JS_DefineProperty(_jsCtx, obj, "x", INT_TO_JSVAL(event->motion.x),
+            obj = createMouseEvent(_jsCtx, event->motion.x, event->motion.y);
+            JS_DefineProperty(_jsCtx, obj, "deltaX", INT_TO_JSVAL(event->motion.xrel),
                 JS_PropertyStub, JS_PropertyStub, 0);
-            JS_DefineProperty(_jsCtx, obj, "y", INT_TO_JSVAL(event->motion.y),
+            JS_DefineProperty(_jsCtx, obj, "deltaY", INT_TO_JSVAL(event->motion.xrel),
                 JS_PropertyStub, JS_PropertyStub, 0);
             break;
         default:
-            // Unhandled event
-            return;
+            return; // Unhandled event
     }
 
-    jsval argv = OBJECT_TO_JSVAL(obj);
+    jsval fval;
+    if (!JS_GetPropertyById(_jsCtx, _eventObj, handler, &fval)) {
+        return; // Mising handler
+    }
+
+    jsval argv[] = { OBJECT_TO_JSVAL(obj) };
     jsval rval;
-    JS_CallFunction(_jsCtx, JS_GetGlobalObject(_jsCtx), handler, 1, &argv, &rval);
+    JS_CallFunctionValue(_jsCtx, _eventObj, fval, sizeof(argv), argv, &rval);
 }

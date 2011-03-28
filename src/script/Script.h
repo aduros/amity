@@ -8,7 +8,7 @@ union SDL_Event;
 class Script
 {
 public:
-    Script (AmityContext* amityCtx) : _amityCtx(amityCtx), _jsCtx(0), _onEnterFrame(0) { }
+    Script (AmityContext* amityCtx) : _amityCtx(amityCtx), _jsCtx(0), _eventObj(0) { }
     ~Script();
 
     int parse (const char* filename, const char* source);
@@ -28,12 +28,14 @@ protected:
     SCRIPT_FUNCTION(amity_canvas_translate, jsCtx, argc, vp);
 
     SCRIPT_PROPERTY(amity_canvas_setAlpha, jsCtx, obj, id, vp);
-    SCRIPT_PROPERTY(amity_setOnEnterFrame, jsCtx, obj, id, vp);
-    SCRIPT_PROPERTY(amity_setOnMouseMove, jsCtx, obj, id, vp);
+
+    // Interned strings
+    jsid _onEnterFrame;
+    jsid _onMouseDown;
+    jsid _onMouseMove;
+    jsid _onMouseUp;
 
     AmityContext* _amityCtx;
     JSContext* _jsCtx;
-
-    JSFunction* _onEnterFrame;
-    JSFunction* _onMouseMove;
+    JSObject* _eventObj;
 };
