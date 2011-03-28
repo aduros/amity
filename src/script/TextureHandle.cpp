@@ -4,9 +4,9 @@
 #include "script/util.h"
 
 JSPropertySpec TextureHandle::jsProperties[] = {
-    { "width", 0, JSPROP_ENUMERATE | JSPROP_READONLY,
+    { "width", 0, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT | JSPROP_SHARED,
         TextureHandle::bindProperty<&TextureHandle::getWidth>, NULL },
-    { "height", 0, JSPROP_ENUMERATE | JSPROP_READONLY,
+    { "height", 0, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT | JSPROP_SHARED,
         TextureHandle::bindProperty<&TextureHandle::getHeight>, NULL },
     { NULL }
 };
