@@ -8,8 +8,8 @@ It will be possible to use haXe to write games that run on Amity (Android, iPhon
 Requirements
 ------------
 
-* Android SDK
-* Android NDK (r5 or higher)
+* Android SDK, with the 2.1 (android-7) emulator image installed.
+* Android NDK (r5 or higher).
 * Mozilla's [Android NDK r4c](http://ftp.mozilla.org/pub/mozilla.org/mobile/source/android-ndk-r4c-0moz3.tar.bz2), required for now to build Spidermonkey
 * autoconf2.13, to build Spidermonkey (Available in an Ubuntu package of the same name).
 
@@ -28,7 +28,7 @@ Building
     The Android emulator doesn't support OpenGLES v2. SDL will soon add a proper fallback to v1, so this is temporary.
 
 3.  Patch external/mozjs/android-build.sh to point to your directory:
-        
+
         ANDROID_NDK=/absolute/path/to/android-ndk-r4c
         ANDROID_SDK=/absolute/path/to/android-sdk-linux_86
 
