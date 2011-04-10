@@ -4,3 +4,4 @@
 /android/local.properties
 /android/obj
 /android/build.xml
+/android/proguard.cfg
