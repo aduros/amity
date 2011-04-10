@@ -13,7 +13,7 @@
 
 #define FPS_INTERVAL (5000)
 
-static SDL_Renderer* renderer;
+static SDL_Window* window;
 static AmityContext amityCtx;
 
 Uint32 delayFrame ()
@@ -82,7 +82,7 @@ void mainLoop ()
         }
         amityCtx.script.onEnterFrame(elapsed);
 
-        SDL_RenderPresent(renderer);
+        SDL_GL_SwapWindow(window);
         delayFrame();
     }
 }
@@ -101,7 +101,7 @@ int main (int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-    SDL_Window* window = SDL_CreateWindow(NULL, 0, 0, 0, 0,
+    window = SDL_CreateWindow(NULL, 0, 0, 0, 0,
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (window == NULL) {
         LOGE("Unable to create window: %s", SDL_GetError());
@@ -109,15 +109,19 @@ int main (int argc, char* argv[])
     }
     amityCtx.window = window;
 
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    LOGI("Created window [width=%i, height=%i]", w, h);
+    int width, height;
+    SDL_GetWindowSize(window, &width, &height);
+    LOGI("Created window [width=%i, height=%i]", width, height);
 
-    renderer = SDL_CreateRenderer(window, 0, 0);
-    if (renderer == NULL) {
-        LOGE("Unable to create renderer: %s", SDL_GetError());
-        return 1;
-    }
+    SDL_GL_CreateContext(window);
+    SDL_GL_SetSwapInterval(1);
+
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrthof(0, width, height, 0, 0, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     mainLoop();
 
