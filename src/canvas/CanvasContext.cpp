@@ -50,6 +50,8 @@ void CanvasContext::drawTexture (const Texture* texture, float dx, float dy)
 {
     float w = texture->getWidth();
     float h = texture->getHeight();
+    float maxU = texture->getMaxU();
+    float maxV = texture->getMaxV();
     const CanvasState& state = _states.top();
 
     GLfloat verts[] = {
@@ -60,9 +62,9 @@ void CanvasContext::drawTexture (const Texture* texture, float dx, float dy)
     };
     GLfloat uv[] = {
         0, 0,
-        1, 0,
-        0, 1,
-        1, 1,
+        maxU, 0,
+        0, maxV,
+        maxU, maxV,
     };
 
     glEnable(GL_TEXTURE_2D);

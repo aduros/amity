@@ -7,7 +7,7 @@
 #include "assets.h"
 #include "log.h"
 
-int nextPowerOfTwo (int x)
+static int nextPowerOfTwo (int x)
 {
     int n = 1;
     while (n < x) {
@@ -27,30 +27,35 @@ Texture* Texture::fromAsset (const char* assetName)
         return NULL;
     }
 
+    int widthPow2 = nextPowerOfTwo(surface->w);
+    int heightPow2 = nextPowerOfTwo(surface->h);
+
     // Convert the loaded image into a standard pixel format for OpenGL
     SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_ABGR8888,
         &bpp, &maskR, &maskG, &maskB, &maskA);
     SDL_Surface* surface8888 = SDL_CreateRGBSurface(
-        0, surface->w, surface->h, bpp, maskR, maskG, maskB, maskA);
+        0, widthPow2, heightPow2, bpp, maskR, maskG, maskB, maskA);
+
     SDL_BlitSurface(surface, NULL, surface8888, NULL);
 
     Texture* texture = new Texture();
     texture->_width = surface->w;
     texture->_height = surface->h;
+    texture->_maxU = (float)surface->w / widthPow2;
+    texture->_maxV = (float)surface->h / heightPow2;
 
     glEnable(GL_TEXTURE_2D);
     glGenTextures(1, &texture->_id);
     glBindTexture(GL_TEXTURE_2D, texture->_id);
 
     // Create the texture in OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-        nextPowerOfTwo(texture->_width), nextPowerOfTwo(texture->_height),
-        0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthPow2, heightPow2, 0,
+        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Upload the asset
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthPow2, heightPow2, 0,
         GL_RGBA, GL_UNSIGNED_BYTE, surface8888->pixels);
 
     glDisable(GL_TEXTURE_2D);
