@@ -114,7 +114,7 @@ int main (int argc, char* argv[])
     LOGI("Created window [width=%i, height=%i]", width, height);
 
     SDL_GL_CreateContext(window);
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(1); // Enable vsync
 
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
