@@ -124,7 +124,7 @@ SCRIPT_PROPERTY (Script::amity_canvas_setAlpha, jsCtx, obj, id, vp)
 static jsid getInternedId (JSContext* jsCtx, const char* name)
 {
     JSString* str = JS_InternString(jsCtx, name);
-    return INTERNED_STRING_TO_JSID(JS_InternString(jsCtx, name));
+    return INTERNED_STRING_TO_JSID(str);
 }
 
 void Script::initAmityClasses ()
