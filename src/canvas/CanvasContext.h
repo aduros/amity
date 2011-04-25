@@ -2,6 +2,8 @@
 
 #include <stack>
 
+#include "SDL_opengles.h"
+
 #include "canvas/Texture.h"
 
 struct CanvasState
@@ -25,8 +27,14 @@ public:
     void setAlpha (float alpha);
     void setBlendMode (int blendMode);
 
-    void drawTexture (const Texture* image, float dx, float dy);
+    void drawImage (const Texture* texture, float destX, float destY);
+    void drawImage (const Texture* texture, float destX, float destY,
+        float destW, float destH, float sourceX, float sourceY);
+
+    void drawPattern (const Texture* texture, float destX, float destY, float destW, float destH);
 
 protected:
+
+    void drawQuad (const Texture* texture, GLfloat* verts, GLfloat* uv);
     std::stack<CanvasState> _states;
 };

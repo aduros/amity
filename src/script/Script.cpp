@@ -94,7 +94,7 @@ SCRIPT_FUNCTION (Script::amity_canvas_scale, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_drawImage, jsCtx, argc, vp)
 {
     JSObject* textureObj;
     jsdouble x, y;
@@ -106,7 +106,23 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawTexture, jsCtx, argc, vp)
     if (textureHandle == NULL) {
         return JS_FALSE;
     }
-    _amityCtx->canvas.drawTexture(textureHandle->getTexture(), x, y);
+    _amityCtx->canvas.drawImage(textureHandle->getTexture(), x, y);
+    return JS_TRUE;
+}
+
+SCRIPT_FUNCTION (Script::amity_canvas_drawPattern, jsCtx, argc, vp)
+{
+    JSObject* textureObj;
+    jsdouble x, y, w, h;
+    if (!JS_ConvertArguments(jsCtx, 5, JS_ARGV(jsCtx, vp), "odddd", &textureObj, &x, &y, &w, &h)) {
+        return JS_FALSE;
+    }
+
+    TextureHandle* textureHandle = TextureHandle::getFrom(jsCtx, textureObj);
+    if (textureHandle == NULL) {
+        return JS_FALSE;
+    }
+    _amityCtx->canvas.drawPattern(textureHandle->getTexture(), x, y, w, h);
     return JS_TRUE;
 }
 
@@ -161,7 +177,8 @@ void Script::initAmityClasses ()
         JS_FS("rotate", (bindFunction<Script, &Script::amity_canvas_rotate>), 1, 0),
         JS_FS("translate", (bindFunction<Script, &Script::amity_canvas_translate>), 2, 0),
         JS_FS("scale", (bindFunction<Script, &Script::amity_canvas_scale>), 2, 0),
-        JS_FS("drawTexture", (bindFunction<Script, &Script::amity_canvas_drawTexture>), 3, 0),
+        JS_FS("drawImage", (bindFunction<Script, &Script::amity_canvas_drawImage>), 3, 0),
+        JS_FS("drawPattern", (bindFunction<Script, &Script::amity_canvas_drawPattern>), 5, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, canvas, canvasFunctions);

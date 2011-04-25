@@ -1,7 +1,5 @@
 #include "canvas/CanvasContext.h"
 
-#include "SDL_opengles.h"
-
 CanvasContext::CanvasContext ()
 {
     CanvasState state;
@@ -46,27 +44,60 @@ void CanvasContext::setBlendMode (int blendMode)
 {
 }
 
-void CanvasContext::drawTexture (const Texture* texture, float dx, float dy)
+void CanvasContext::drawImage (const Texture* texture, float destX, float destY)
 {
     float w = texture->getWidth();
     float h = texture->getHeight();
+    drawImage(texture, destX, destY, 0, 0, w, h);
+}
+
+void CanvasContext::drawImage (const Texture* texture,
+    float destX, float destY, float sourceX, float sourceY, float sourceW, float sourceH)
+{
     float maxU = texture->getMaxU();
     float maxV = texture->getMaxV();
-    const CanvasState& state = _states.top();
 
     GLfloat verts[] = {
-        dx, dy,
-        dx + w, dy,
-        dx, dy + h,
-        dx + w, dy + h,
+        destX, destY,
+        destX + sourceW, destY,
+        destX, destY + sourceH,
+        destX + sourceW, destY + sourceH,
     };
+    // TODO: Use sourceX/Y to get the right rectangle
     GLfloat uv[] = {
         0, 0,
         maxU, 0,
         0, maxV,
         maxU, maxV,
     };
+    drawQuad(texture, verts, uv);
+}
 
+void CanvasContext::drawPattern (
+    const Texture* texture, float destX, float destY, float destW, float destH)
+{
+    float w = texture->getWidth();
+    float h = texture->getHeight();
+    float maxU = texture->getMaxU();
+    float maxV = texture->getMaxV();
+
+    GLfloat verts[] = {
+        destX, destY,
+        destX + destW, destY,
+        destX, destY + destH,
+        destX + destW, destY + destH,
+    };
+    GLfloat uv[] = {
+        0, 0,
+        destW/w, 0,
+        0, destH/h,
+        destW/w, destH/h,
+    };
+    drawQuad(texture, verts, uv);
+}
+
+void CanvasContext::drawQuad (const Texture* texture, GLfloat* verts, GLfloat* uv)
+{
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture->getId());
     glVertexPointer(2, GL_FLOAT, 0, verts);
