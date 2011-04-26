@@ -30,14 +30,6 @@ Texture* Texture::fromAsset (const char* assetName)
     int widthPow2 = nextPowerOfTwo(surface->w);
     int heightPow2 = nextPowerOfTwo(surface->h);
 
-    // Convert the loaded image into a standard pixel format for OpenGL
-    SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_ABGR8888,
-        &bpp, &maskR, &maskG, &maskB, &maskA);
-    SDL_Surface* surface8888 = SDL_CreateRGBSurface(
-        0, widthPow2, heightPow2, bpp, maskR, maskG, maskB, maskA);
-
-    SDL_BlitSurface(surface, NULL, surface8888, NULL);
-
     Texture* texture = new Texture();
     texture->_width = surface->w;
     texture->_height = surface->h;
@@ -48,19 +40,22 @@ Texture* Texture::fromAsset (const char* assetName)
     glGenTextures(1, &texture->_id);
     glBindTexture(GL_TEXTURE_2D, texture->_id);
 
-    // Create the texture in OpenGL
+    // Create the upscaled texture in OpenGL
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthPow2, heightPow2, 0,
         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Upload the asset
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthPow2, heightPow2, 0,
-        GL_RGBA, GL_UNSIGNED_BYTE, surface8888->pixels);
+    // Convert the loaded image into a standard pixel format for OpenGL
+    SDL_Surface* surfaceFormatted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
+
+    // Upload the pixels, which may only be a subregion for NPO2 textures
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surfaceFormatted->w, surfaceFormatted->h,
+       GL_RGBA, GL_UNSIGNED_BYTE, surfaceFormatted->pixels);
 
     glDisable(GL_TEXTURE_2D);
     SDL_FreeSurface(surface);
-    SDL_FreeSurface(surface8888);
+    SDL_FreeSurface(surfaceFormatted);
 
     return texture;
 }

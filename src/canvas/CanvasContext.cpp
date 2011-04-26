@@ -105,15 +105,14 @@ void CanvasContext::drawQuad (const Texture* texture, GLfloat* verts, GLfloat* u
     glTexCoordPointer(2, GL_FLOAT, 0, uv);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-    //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    //glColor4f(1, 1, 1, 0.5);
+    // TODO: Only bother turning on blending for textures with an alpha channel
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    //glColor4f(1, 1, 1, 1);
-    //glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisable(GL_TEXTURE_2D);
