@@ -35,9 +35,9 @@ void CanvasContext::translate (float x, float y)
     glTranslatef(x, y, 0);
 }
 
-void CanvasContext::setAlpha (float alpha)
+void CanvasContext::multiplyAlpha (float factor)
 {
-    _states.top().alpha = alpha;
+    _states.top().alpha *= factor;
 }
 
 void CanvasContext::setBlendMode (int blendMode)
@@ -98,6 +98,8 @@ void CanvasContext::drawPattern (
 
 void CanvasContext::drawQuad (const Texture* texture, GLfloat* verts, GLfloat* uv)
 {
+    const CanvasState& state = _states.top();
+
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture->getId());
     glVertexPointer(2, GL_FLOAT, 0, verts);
@@ -109,9 +111,11 @@ void CanvasContext::drawQuad (const Texture* texture, GLfloat* verts, GLfloat* u
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(1, 1, 1, state.alpha);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+    glColor4f(1, 1, 1, 1);
     glDisable(GL_BLEND);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);

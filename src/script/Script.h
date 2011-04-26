@@ -22,13 +22,12 @@ protected:
 
     SCRIPT_FUNCTION(amity_canvas_drawImage, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_drawPattern, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_multiplyAlpha, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_restore, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_rotate, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_save, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_scale, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_translate, jsCtx, argc, vp);
-
-    SCRIPT_PROPERTY(amity_canvas_setAlpha, jsCtx, obj, id, vp);
 
     // Interned strings
     jsid _onEnterFrame;

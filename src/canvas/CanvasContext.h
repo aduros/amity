@@ -24,7 +24,7 @@ public:
     void rotate (float angle);
     void translate (float x, float y);
 
-    void setAlpha (float alpha);
+    void multiplyAlpha (float factor);
     void setBlendMode (int blendMode);
 
     void drawImage (const Texture* texture, float destX, float destY);

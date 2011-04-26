@@ -40,6 +40,7 @@ __amity.events.onEnterFrame = function (dt) {
 
         //__amity.canvas.alpha = (Math.sin(elapsed/1000)+1)/2;
         __amity.canvas.save();
+        __amity.canvas.multiplyAlpha(0.5);
         __amity.canvas.translate(x, y);
         var scale = 0.25*Math.sin(0.1*n) + 1;
         __amity.canvas.scale(scale, scale);

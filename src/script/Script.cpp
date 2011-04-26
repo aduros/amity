@@ -126,14 +126,13 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawPattern, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_PROPERTY (Script::amity_canvas_setAlpha, jsCtx, obj, id, vp)
+SCRIPT_FUNCTION (Script::amity_canvas_multiplyAlpha, jsCtx, argc, vp)
 {
-    jsdouble alpha;
-    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "d", &alpha)) {
+    jsdouble factor;
+    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "d", &factor)) {
         return JS_FALSE;
     }
-
-    _amityCtx->canvas.setAlpha(alpha);
+    _amityCtx->canvas.multiplyAlpha(factor);
     return JS_TRUE;
 }
 
@@ -172,18 +171,17 @@ void Script::initAmityClasses ()
     };
     JS_DefineConstDoubles(_jsCtx, canvas, amityConstants);
     JSFunctionSpec canvasFunctions[] = {
-        JS_FS("save", (bindFunction<Script, &Script::amity_canvas_save>), 1, 0),
-        JS_FS("restore", (bindFunction<Script, &Script::amity_canvas_restore>), 1, 0),
-        JS_FS("rotate", (bindFunction<Script, &Script::amity_canvas_rotate>), 1, 0),
-        JS_FS("translate", (bindFunction<Script, &Script::amity_canvas_translate>), 2, 0),
-        JS_FS("scale", (bindFunction<Script, &Script::amity_canvas_scale>), 2, 0),
         JS_FS("drawImage", (bindFunction<Script, &Script::amity_canvas_drawImage>), 3, 0),
         JS_FS("drawPattern", (bindFunction<Script, &Script::amity_canvas_drawPattern>), 5, 0),
+        JS_FS("multiplyAlpha", (bindFunction<Script, &Script::amity_canvas_multiplyAlpha>), 1, 0),
+        JS_FS("restore", (bindFunction<Script, &Script::amity_canvas_restore>), 1, 0),
+        JS_FS("rotate", (bindFunction<Script, &Script::amity_canvas_rotate>), 1, 0),
+        JS_FS("save", (bindFunction<Script, &Script::amity_canvas_save>), 1, 0),
+        JS_FS("scale", (bindFunction<Script, &Script::amity_canvas_scale>), 2, 0),
+        JS_FS("translate", (bindFunction<Script, &Script::amity_canvas_translate>), 2, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, canvas, canvasFunctions);
-    JS_DefineProperty(_jsCtx, canvas, "alpha", JSVAL_NULL,
-        JS_PropertyStub, bindProperty<Script, &Script::amity_canvas_setAlpha>, 0);
 
     // Init all handles
     TextureHandle::init(_jsCtx);
