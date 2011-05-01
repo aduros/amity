@@ -36,7 +36,6 @@ Texture* Texture::fromAsset (const char* assetName)
     texture->_maxU = (float)surface->w / widthPow2;
     texture->_maxV = (float)surface->h / heightPow2;
 
-    glEnable(GL_TEXTURE_2D);
     glGenTextures(1, &texture->_id);
     glBindTexture(GL_TEXTURE_2D, texture->_id);
 
@@ -53,7 +52,6 @@ Texture* Texture::fromAsset (const char* assetName)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surfaceFormatted->w, surfaceFormatted->h,
        GL_RGBA, GL_UNSIGNED_BYTE, surfaceFormatted->pixels);
 
-    glDisable(GL_TEXTURE_2D);
     SDL_FreeSurface(surface);
     SDL_FreeSurface(surfaceFormatted);
 

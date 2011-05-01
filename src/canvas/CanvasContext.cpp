@@ -1,10 +1,25 @@
 #include "canvas/CanvasContext.h"
 
+#include "SDL_video.h"
+
+extern SDL_Window* window;
+
 CanvasContext::CanvasContext ()
 {
     CanvasState state;
     state.alpha = 1;
     state.blendMode = 0;
+
+    // FIXME: Detect if this extension is supported.
+    // SDL_GL_ExtensionSupported("GL_OES_draw_texture") appears to return false on the N1 even
+    // though it works fine.
+    state.canDrawTexture = true;
+
+    state.translateX = 0;
+    state.translateY = 0;
+    state.scaleX = 1;
+    state.scaleY = 1;
+
     _states.push(state);
 }
 
@@ -22,17 +37,30 @@ void CanvasContext::restore ()
 
 void CanvasContext::scale (float x, float y)
 {
-    glScalef(x, y, 0);
+    CanvasState& state = _states.top();
+    if (state.canDrawTexture) {
+        state.scaleX *= x;
+        state.scaleY *= y;
+    }
+    glScalef(x, y, 0); // TODO: Usually no need to modify GL matrix if using draw_texture
 }
 
 void CanvasContext::rotate (float angle)
 {
+    CanvasState& state = _states.top();
+    state.canDrawTexture = false;
+
     glRotatef(angle, 0, 0, 1);
 }
 
 void CanvasContext::translate (float x, float y)
 {
-    glTranslatef(x, y, 0);
+    CanvasState& state = _states.top();
+    if (state.canDrawTexture) {
+        state.translateX += x*state.scaleX;
+        state.translateY += y*state.scaleY;
+    }
+    glTranslatef(x, y, 0); // TODO: Usually no need to modify GL matrix if using draw_texture
 }
 
 void CanvasContext::multiplyAlpha (float factor)
@@ -44,42 +72,61 @@ void CanvasContext::setBlendMode (int blendMode)
 {
 }
 
-void CanvasContext::drawImage (const Texture* texture, float destX, float destY)
-{
-    float w = texture->getWidth();
-    float h = texture->getHeight();
-    drawImage(texture, destX, destY, 0, 0, w, h);
-}
-
 void CanvasContext::drawImage (const Texture* texture,
     float destX, float destY, float sourceX, float sourceY, float sourceW, float sourceH)
 {
-    float maxU = texture->getMaxU();
-    float maxV = texture->getMaxV();
+    const CanvasState& state = _states.top();
 
-    GLfloat verts[] = {
-        destX, destY,
-        destX + sourceW, destY,
-        destX, destY + sourceH,
-        destX + sourceW, destY + sourceH,
-    };
-    // TODO: Use sourceX/Y to get the right rectangle
-    GLfloat uv[] = {
-        0, 0,
-        maxU, 0,
-        0, maxV,
-        maxU, maxV,
-    };
-    drawQuad(texture, verts, uv);
+    prepare(texture);
+
+    if (state.canDrawTexture) {
+        // Use GL draw_texture
+        int windowHeight;
+        SDL_GetWindowSize(window, NULL, &windowHeight);
+        float destW = state.scaleX * sourceW;
+        float destH = state.scaleY * sourceH;
+        GLfloat cropRect[] = {
+            sourceX, sourceY + texture->getHeight(), sourceW, -sourceH
+        };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_CROP_RECT_OES, cropRect);
+        glDrawTexfOES(state.translateX + destX,
+            windowHeight - destY - destH - state.translateY,
+            0, destW, destH);
+
+    } else {
+        // Use GL vertex arrays
+        GLfloat verts[] = {
+            destX, destY,
+            destX + sourceW, destY,
+            destX, destY + sourceH,
+            destX + sourceW, destY + sourceH,
+        };
+
+        float inverseMaxU = texture->getMaxU();
+        float inverseMaxV = texture->getMaxV();
+        float x1 = sourceX/texture->getWidth() * inverseMaxU;
+        float y1 = sourceY/texture->getHeight() * inverseMaxV;
+        float x2 = x1 + sourceW/texture->getWidth() * inverseMaxU;
+        float y2 = y1 + sourceH/texture->getHeight() * inverseMaxV;
+        GLfloat uv[] = {
+            x1, y1,
+            x2, y1,
+            x1, y2,
+            x2, y2,
+        };
+        glVertexPointer(2, GL_FLOAT, 0, verts);
+        glTexCoordPointer(2, GL_FLOAT, 0, uv);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
 }
 
 void CanvasContext::drawPattern (
     const Texture* texture, float destX, float destY, float destW, float destH)
 {
+    prepare(texture);
+
     float w = texture->getWidth();
     float h = texture->getHeight();
-    float maxU = texture->getMaxU();
-    float maxV = texture->getMaxV();
 
     GLfloat verts[] = {
         destX, destY,
@@ -93,31 +140,20 @@ void CanvasContext::drawPattern (
         0, destH/h,
         destW/w, destH/h,
     };
-    drawQuad(texture, verts, uv);
+
+    glVertexPointer(2, GL_FLOAT, 0, verts);
+    glTexCoordPointer(2, GL_FLOAT, 0, uv);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void CanvasContext::drawQuad (const Texture* texture, GLfloat* verts, GLfloat* uv)
+void CanvasContext::prepare (const Texture* texture)
 {
     const CanvasState& state = _states.top();
 
-    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture->getId());
-    glVertexPointer(2, GL_FLOAT, 0, verts);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glTexCoordPointer(2, GL_FLOAT, 0, uv);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     // TODO: Only bother turning on blending for textures with an alpha channel
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glColor4f(1, 1, 1, state.alpha);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glColor4f(1, 1, 1, 1);
-    glDisable(GL_BLEND);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisable(GL_TEXTURE_2D);
 }

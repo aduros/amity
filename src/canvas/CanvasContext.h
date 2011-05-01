@@ -10,6 +10,11 @@ struct CanvasState
 {
     float alpha;
     int blendMode;
+
+    // State used for the GL draw_texture extension
+    bool canDrawTexture;
+    float translateX, translateY;
+    float scaleX, scaleY;
 };
 
 class CanvasContext
@@ -27,14 +32,14 @@ public:
     void multiplyAlpha (float factor);
     void setBlendMode (int blendMode);
 
-    void drawImage (const Texture* texture, float destX, float destY);
     void drawImage (const Texture* texture, float destX, float destY,
-        float destW, float destH, float sourceX, float sourceY);
+        float sourceX, float sourceY, float sourceW, float sourceH);
 
     void drawPattern (const Texture* texture, float destX, float destY, float destW, float destH);
 
 protected:
 
-    void drawQuad (const Texture* texture, GLfloat* verts, GLfloat* uv);
+    void prepare (const Texture* texture);
+
     std::stack<CanvasState> _states;
 };

@@ -106,7 +106,21 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawImage, jsCtx, argc, vp)
     if (textureHandle == NULL) {
         return JS_FALSE;
     }
-    _amityCtx->canvas.drawImage(textureHandle->getTexture(), x, y);
+
+    Texture* texture = textureHandle->getTexture();
+    jsdouble sx, sy, w, h;
+    if (argc >= 7) {
+        // Convert the optional arguments
+        if (!JS_ConvertArguments(jsCtx, 4, JS_ARGV(jsCtx, vp)+3, "dddd", &sx, &sy, &w, &h)) {
+            return JS_FALSE;
+        }
+    } else {
+        sx = 0;
+        sy = 0;
+        w = texture->getWidth();
+        h = texture->getHeight();
+    }
+    _amityCtx->canvas.drawImage(texture, x, y, sx, sy, w, h);
     return JS_TRUE;
 }
 

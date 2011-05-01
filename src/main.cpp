@@ -13,7 +13,7 @@
 
 #define FPS_INTERVAL (5000)
 
-static SDL_Window* window;
+SDL_Window* window;
 static AmityContext amityCtx;
 
 Uint32 delayFrame ()
@@ -64,9 +64,6 @@ void mainLoop ()
                 return;
             }
         }
-
-        glClearColor(0.1, 0.1, 0.1, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
 
         Uint32 nowTime = SDL_GetTicks();
         Uint32 elapsed = nowTime - lastTime;
@@ -122,6 +119,11 @@ int main (int argc, char* argv[])
     glOrthof(0, width, height, 0, 0, 1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+    glEnable(GL_TEXTURE_2D);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnable(GL_BLEND);
 
     mainLoop();
 
