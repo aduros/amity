@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+import os, shutil
+
+def options(ctx):
+    ctx.add_option("--pdk-path", action="store", default="/opt/PalmPDK", dest="pdk_path")
+
+def configure(ctx):
+    prefix = ctx.options.pdk_path + "/arm-gcc/bin/arm-none-linux-gnueabi-"
+    ctx.env.CXX = prefix + "gcc"
+    ctx.env.AR = prefix + "ar"
+    ctx.check_tool("g++")
+
+def build(ctx):
+    pdk = ctx.options.pdk_path
+    src = "../src"
+    ctx.program(
+        source=ctx.path.find_node(src).ant_glob("**/*.cpp"),
+        target="app/amity",
+        lib=[ "SDL", "SDL_image", "GLES_CM", "pdl", "js_static", "nspr4", "plc4", "plds4" ],
+        use=[ "js_static" ],
+        includes=[
+            src,
+            pdk + "/include",
+            pdk + "/include/SDL",
+            "../external/mozjs/webos-build/js/dist/include",
+        ],
+        libpath=[
+            pdk+"/device/lib",
+            # Inconsistent relative paths: when linking, waf runs from webos/build
+            "../../external/mozjs/webos-build/js/dist/lib",
+            "../../external/mozjs/webos-build/nspr/dist/lib",
+        ],
+        cxxflags=
+            "-O2 -D__WEBOS__ " +
+            "-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp " +
+            "--sysroot="+pdk+"/arm-gcc/sysroot "
+        ,
+        linkflags=[ "-Wl,--allow-shlib-undefined" ]
+    )
+    ctx(rule="cp ${SRC} ${TGT}", source="appinfo.json", target="app/appinfo.json")
+    ctx(rule="echo filemode.755=amity > app/package.properties", shell=True, always=True)
+    ctx.add_group() # Finish the above before running palm-package
+
+    ctx(rule="palm-package app", always=True)
+
+# Install and run the package on the device
+def push(ctx):
+    os.system("palm-install build/com.threerings.amity_1.0.0_all.ipk")
+    os.system("palm-launch com.threerings.amity")

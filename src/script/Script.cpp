@@ -177,7 +177,7 @@ void Script::initAmityClasses ()
     JSObject* canvas = JS_DefineObject(_jsCtx, amity, "canvas",
         NULL, NULL, JSPROP_READONLY | JSPROP_PERMANENT);
     int screenWidth, screenHeight;
-    SDL_GetWindowSize(_amityCtx->window, &screenWidth, &screenHeight);
+    _amityCtx->canvas.getSize(&screenWidth, &screenHeight);
     JSConstDoubleSpec amityConstants[] = {
         { screenWidth, "WIDTH", 0, { 0, 0, 0 } },
         { screenHeight, "HEIGHT", 0, { 0, 0, 0 } },
@@ -225,11 +225,16 @@ int Script::parse (const char* filename, const char* source)
     // Attach 'this' to the context so we can look it up in bound functions
     JS_SetContextPrivate(_jsCtx, this);
 
-    JS_SetOptions(_jsCtx,
-        JSOPTION_WERROR |
+    uint32 options = JSOPTION_WERROR |
         JSOPTION_VAROBJFIX |
-        JSOPTION_JIT | JSOPTION_METHODJIT |
-        JSOPTION_NO_SCRIPT_RVAL);
+        JSOPTION_NO_SCRIPT_RVAL;
+
+    // JIT produces strange bugs on webOS, do not enable it there for now
+    #ifndef __WEBOS__
+    options |= JSOPTION_JIT | JSOPTION_METHODJIT;
+    #endif
+
+    JS_SetOptions(_jsCtx, options);
     JS_SetVersion(_jsCtx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_jsCtx, scriptReportError);
 

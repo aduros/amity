@@ -4,6 +4,10 @@
 #include "SDL.h"
 #include "SDL_opengles.h"
 
+#ifdef __WEBOS__
+#include "PDL.h"
+#endif
+
 #include "canvas/CanvasContext.h"
 #include "script/Script.h"
 #include "AmityContext.h"
@@ -13,7 +17,6 @@
 
 #define FPS_INTERVAL (5000)
 
-SDL_Window* window;
 static AmityContext amityCtx;
 
 Uint32 delayFrame ()
@@ -79,26 +82,41 @@ void mainLoop ()
         }
         amityCtx.script.onEnterFrame(elapsed);
 
-        SDL_GL_SwapWindow(window);
+#if SDL_VERSION_ATLEAST(1,3,0)
+        SDL_GL_SwapWindow(amityCtx.window);
+#else
+        SDL_GL_SwapBuffers();
+#endif
         delayFrame();
     }
 }
 
 int main (int argc, char* argv[])
 {
+#ifdef __WEBOS__
+    openlog("com.threerings.amity", 0, LOG_USER);
+#endif
+
     LOGI("Main screen turn on, compiled " __DATE__ " at " __TIME__);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE) < 0) {
         LOGE("Unable to init SDL: %s", SDL_GetError());
         return 1;
     }
     atexit(SDL_Quit);
 
+#ifdef __WEBOS__
+    PDL_Init(0);
+    atexit(PDL_Quit);
+#endif
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-    window = SDL_CreateWindow(NULL, 0, 0, 0, 0,
+#if SDL_VERSION_ATLEAST(1,3,0)
+    SDL_Window* window = SDL_CreateWindow(NULL, 0, 0, 0, 0,
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (window == NULL) {
         LOGE("Unable to create window: %s", SDL_GetError());
@@ -108,10 +126,16 @@ int main (int argc, char* argv[])
 
     int width, height;
     SDL_GetWindowSize(window, &width, &height);
-    LOGI("Created window [width=%i, height=%i]", width, height);
 
     SDL_GL_CreateContext(window);
     SDL_GL_SetSwapInterval(1); // Enable vsync
+#else
+    amityCtx.screen = SDL_SetVideoMode(0, 0, 0, SDL_OPENGL);
+    int width = amityCtx.screen->w;
+    int height = amityCtx.screen->h;
+#endif
+
+    LOGI("Created window [width=%i, height=%i]", width, height);
 
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);

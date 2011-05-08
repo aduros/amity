@@ -1,0 +1,9 @@
+{
+    "id": "com.threerings.amity",
+    "main": "amity",
+    "requiredMemory": 64,
+    "title": "Amity Test",
+    "type": "pdk",
+    "vendor": "Bruno Garcia",
+    "version": "1.0.0"
+}

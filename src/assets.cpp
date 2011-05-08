@@ -4,12 +4,16 @@
 
 #include "log.h"
 
-#define SDCARD_ROOT "/sdcard/amity-dev/"
+#ifdef __ANDROID__
+#define STAGING_ROOT "/sdcard/amity-dev/"
+#elif __WEBOS__
+#define STAGING_ROOT "/tmp/amity-dev/"
+#endif
 
 SDL_RWops* loadAsset (const char* assetName)
 {
-    char sdcard[sizeof(SDCARD_ROOT) + strlen(assetName)];
-    strcpy(sdcard, SDCARD_ROOT);
+    char sdcard[sizeof(STAGING_ROOT) + strlen(assetName)];
+    strcpy(sdcard, STAGING_ROOT);
     strcat(sdcard, assetName);
 
     SDL_RWops* asset = SDL_RWFromFile(sdcard, "r");

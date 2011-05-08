@@ -2,9 +2,13 @@
 
 #include <stack>
 
+#define GL_GLEXT_PROTOTYPES
 #include "SDL_opengles.h"
+#undef GL_GLEXT_PROTOTYPES
 
 #include "canvas/Texture.h"
+
+class AmityContext;
 
 struct CanvasState
 {
@@ -20,7 +24,7 @@ struct CanvasState
 class CanvasContext
 {
 public:
-    CanvasContext ();
+    CanvasContext (AmityContext* amityCtx);
 
     void save ();
     void restore ();
@@ -37,9 +41,12 @@ public:
 
     void drawPattern (const Texture* texture, float destX, float destY, float destW, float destH);
 
+    void getSize (int* width, int* height) const;
+
 protected:
 
     void prepare (const Texture* texture);
 
     std::stack<CanvasState> _states;
+    AmityContext* _amityCtx;
 };

@@ -46,7 +46,15 @@ Texture* Texture::fromAsset (const char* assetName)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Convert the loaded image into a standard pixel format for OpenGL
-    SDL_Surface* surfaceFormatted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
+    SDL_PixelFormat format;
+    SDL_memset(&format, 0, sizeof(SDL_PixelFormat));
+    format.BytesPerPixel = 4;
+    format.BitsPerPixel = 8*format.BytesPerPixel;
+    format.Amask = 0xff000000;
+    format.Bmask = 0x00ff0000;
+    format.Gmask = 0x0000ff00;
+    format.Rmask = 0x000000ff;
+    SDL_Surface* surfaceFormatted = SDL_ConvertSurface(surface, &format, 0);
 
     // Upload the pixels, which may only be a subregion for NPO2 textures
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surfaceFormatted->w, surfaceFormatted->h,

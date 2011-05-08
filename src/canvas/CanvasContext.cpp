@@ -1,10 +1,8 @@
 #include "canvas/CanvasContext.h"
 
-#include "SDL_video.h"
+#include "AmityContext.h"
 
-extern SDL_Window* window;
-
-CanvasContext::CanvasContext ()
+CanvasContext::CanvasContext (AmityContext* amityCtx) : _amityCtx(amityCtx)
 {
     CanvasState state;
     state.alpha = 1;
@@ -82,7 +80,7 @@ void CanvasContext::drawImage (const Texture* texture,
     if (state.canDrawTexture) {
         // Use GL draw_texture
         int windowHeight;
-        SDL_GetWindowSize(window, NULL, &windowHeight);
+        getSize(NULL, &windowHeight);
         float destW = state.scaleX * sourceW;
         float destH = state.scaleY * sourceH;
         GLfloat cropRect[] = {
@@ -144,6 +142,20 @@ void CanvasContext::drawPattern (
     glVertexPointer(2, GL_FLOAT, 0, verts);
     glTexCoordPointer(2, GL_FLOAT, 0, uv);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void CanvasContext::getSize (int* width, int* height) const
+{
+#if SDL_VERSION_ATLEAST(1,3,0)
+    SDL_GetWindowSize(_amityCtx->window, width, height);
+#else
+    if (width != NULL) {
+        *width = _amityCtx->screen->w;
+    }
+    if (height != NULL) {
+        *height = _amityCtx->screen->h;
+    }
+#endif
 }
 
 void CanvasContext::prepare (const Texture* texture)
