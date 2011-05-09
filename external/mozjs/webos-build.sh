@@ -2,8 +2,12 @@
 
 # Builds a copy of Spidermonkey for webOS
 
-# Change this:
-PALM_PDK=/opt/PalmPDK
+. ./build.cfg
+
+if [ ! -n "$PALM_PDK" ]; then
+    echo PALM_PDK not set. Did you set up your build.cfg?
+    exit
+fi
 
 MOZILLA_CENTRAL=$PWD/mozilla-central
 BUILD_DIR=$PWD/webos-build

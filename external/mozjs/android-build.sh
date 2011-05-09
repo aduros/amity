@@ -1,12 +1,15 @@
 #!/bin/sh
-
+#
 # Creates a prebuilt libmozjs.so for the NDK build.
 # This is a work-around until Spidermonkey builds against NDK r5:
 #   https://bugzilla.mozilla.org/show_bug.cgi?id=617115
 
-# Change these:
-ANDROID_NDK=/home/bruno/work/android-ndk-r4c
-ANDROID_SDK=/home/bruno/work/android-sdk-linux_86
+. ./build.cfg
+
+if [ ! -n "$ANDROID_SDK" -o ! -n "$ANDROID_NDK" ]; then
+    echo ANDROID_SDK or ANDROID_NDK not set. Did you set up your build.cfg?
+    exit
+fi
 
 MOZILLA_CENTRAL=$PWD/mozilla-central
 BUILD_DIR=$PWD/android-build

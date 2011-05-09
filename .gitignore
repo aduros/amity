@@ -1,7 +1,11 @@
 /android/bin
+/android/build.xml
 /android/gen
 /android/libs
 /android/local.properties
 /android/obj
-/android/build.xml
 /android/proguard.cfg
+/external/mozjs/android-build/
+/external/mozjs/build.cfg
+/external/mozjs/webos-build/
+/webos/build
