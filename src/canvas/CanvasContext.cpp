@@ -6,7 +6,7 @@ CanvasContext::CanvasContext (AmityContext* amityCtx) : _amityCtx(amityCtx)
 {
     CanvasState state;
     state.alpha = 1;
-    state.blendMode = 0;
+    state.blendMode = BLEND_DEFAULT;
 
     // FIXME: Detect if this extension is supported.
     // SDL_GL_ExtensionSupported("GL_OES_draw_texture") appears to return false on the N1 even
@@ -66,7 +66,7 @@ void CanvasContext::multiplyAlpha (float factor)
     _states.top().alpha *= factor;
 }
 
-void CanvasContext::setBlendMode (int blendMode)
+void CanvasContext::setBlendMode (CanvasBlendMode blendMode)
 {
 }
 

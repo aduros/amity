@@ -10,10 +10,14 @@
 
 class AmityContext;
 
+enum CanvasBlendMode {
+    BLEND_DEFAULT
+};
+
 struct CanvasState
 {
     float alpha;
-    int blendMode;
+    CanvasBlendMode blendMode;
 
     // State used for the GL draw_texture extension
     bool canDrawTexture;
@@ -34,7 +38,7 @@ public:
     void translate (float x, float y);
 
     void multiplyAlpha (float factor);
-    void setBlendMode (int blendMode);
+    void setBlendMode (CanvasBlendMode blendMode);
 
     void drawImage (const Texture* texture, float destX, float destY,
         float sourceX, float sourceY, float sourceW, float sourceH);
