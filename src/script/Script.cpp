@@ -140,6 +140,19 @@ SCRIPT_FUNCTION (Script::amity_canvas_drawPattern, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
+SCRIPT_FUNCTION (Script::amity_canvas_fillRect, jsCtx, argc, vp)
+{
+    uint32 color;
+    jsdouble x, y, width, height;
+    if (!JS_ConvertArguments(jsCtx, 5, JS_ARGV(jsCtx, vp),
+            "udddd", &color, &x, &y, &width, &height)) {
+        return JS_FALSE;
+    }
+
+    _amityCtx->canvas.fillRect(color, x, y, width, height);
+    return JS_TRUE;
+}
+
 SCRIPT_FUNCTION (Script::amity_canvas_multiplyAlpha, jsCtx, argc, vp)
 {
     jsdouble factor;
@@ -187,6 +200,7 @@ void Script::initAmityClasses ()
     JSFunctionSpec canvasFunctions[] = {
         JS_FS("drawImage", (bindFunction<Script, &Script::amity_canvas_drawImage>), 3, 0),
         JS_FS("drawPattern", (bindFunction<Script, &Script::amity_canvas_drawPattern>), 5, 0),
+        JS_FS("fillRect", (bindFunction<Script, &Script::amity_canvas_fillRect>), 5, 0),
         JS_FS("multiplyAlpha", (bindFunction<Script, &Script::amity_canvas_multiplyAlpha>), 1, 0),
         JS_FS("restore", (bindFunction<Script, &Script::amity_canvas_restore>), 1, 0),
         JS_FS("rotate", (bindFunction<Script, &Script::amity_canvas_rotate>), 1, 0),

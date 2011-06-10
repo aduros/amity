@@ -44,7 +44,11 @@ __amity.events.onEnterFrame = function (dt) {
         __amity.canvas.translate(x, y);
         var scale = 0.25*Math.sin(0.1*n) + 1;
         __amity.canvas.scale(scale, scale);
-        __amity.canvas.drawImage(bogartTexture, 0, 0);
+        if (ii == 0) {
+            __amity.canvas.fillRect(0xffcc00, 0, 0, 100, 100);
+        } else {
+            __amity.canvas.drawImage(bogartTexture, 0, 0);
+        }
         __amity.canvas.restore();
     }
 

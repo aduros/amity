@@ -41,6 +41,8 @@ public:
 
     void drawPattern (const Texture* texture, float destX, float destY, float destW, float destH);
 
+    void fillRect (uint32_t color, float x, float y, float width, float height);
+
     void getSize (int* width, int* height) const;
 
 protected:

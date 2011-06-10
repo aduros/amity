@@ -22,6 +22,7 @@ protected:
 
     SCRIPT_FUNCTION(amity_canvas_drawImage, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_drawPattern, jsCtx, argc, vp);
+    SCRIPT_FUNCTION(amity_canvas_fillRect, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_multiplyAlpha, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_restore, jsCtx, argc, vp);
     SCRIPT_FUNCTION(amity_canvas_rotate, jsCtx, argc, vp);

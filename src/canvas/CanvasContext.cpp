@@ -144,6 +144,27 @@ void CanvasContext::drawPattern (
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
+void CanvasContext::fillRect (uint32_t color, float x, float y, float width, float height)
+{
+    const CanvasState& state = _states.top();
+    GLfloat verts[] = {
+        x, y,
+        x + width, y,
+        x, y + height,
+        x + width, y + height,
+    };
+
+    glDisable(GL_TEXTURE_2D);
+    glColor4ub(
+        color >> 16,
+        color >> 8,
+        color >> 0,
+        0xff * state.alpha);
+    glVertexPointer(2, GL_FLOAT, 0, verts);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glEnable(GL_TEXTURE_2D);
+}
+
 void CanvasContext::getSize (int* width, int* height) const
 {
 #if SDL_VERSION_ATLEAST(1,3,0)
