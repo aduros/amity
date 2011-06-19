@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <stdint.h>
 
 #define GL_GLEXT_PROTOTYPES
 #include "SDL_opengles.h"
