@@ -5,7 +5,6 @@
 /android/local.properties
 /android/obj
 /android/proguard.cfg
-/external/mozjs/android-build/
-/external/mozjs/build.cfg
-/external/mozjs/webos-build/
+/external/build
+/external/build.cfg
 /webos/build

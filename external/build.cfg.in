@@ -1,0 +1,11 @@
+#
+# Copy this to build.cfg and edit for your system
+
+# Location of the Android SDK and Mozilla's tweaked Android NDK r4c
+# Leave commented to skip building for Android
+#ANDROID_SDK=/home/bruno/work/android-sdk-linux_86
+#ANDROID_NDK=/home/bruno/work/android-ndk-r4c
+
+# Location of the Palm PDK
+# Leave commented to skip building for webOS
+#PALM_PDK=/opt/PalmPDK

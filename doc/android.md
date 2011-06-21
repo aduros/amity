@@ -14,17 +14,17 @@ Building
         git submodule init
         git submodule update
 
-2.  Create external/mozjs/build.cfg and add the following lines to point to your NDK and SDK:
+2.  Copy external/build.cfg.in to external/build.cfg and edit to point to your NDK and SDK:
 
         ANDROID_NDK=/absolute/path/to/android-ndk-r4c
         ANDROID_SDK=/absolute/path/to/android-sdk-linux_86
 
     (Note the lack of spaces around the equal signs. This file is actually a Bash script)
 
-3.  Build Spidermonkey:
+3.  Build dependencies:
 
-        cd external/mozjs
-        ./android-build.sh
+        cd external
+        ./build-deps.sh
 
 4.  Build Amity with NDK r5:
 

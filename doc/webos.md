@@ -12,16 +12,16 @@ Building
         git submodule init
         git submodule update
 
-2.  Create external/mozjs/build.cfg and add the following line to point to your PDK:
+2.  Copy external/build.cfg.in to external/build.cfg and edit to point to your PDK:
 
         PALM_PDK=/opt/PalmPDK
 
     (Note the lack of spaces around the equal signs. This file is actually a Bash script)
 
-3.  Build Spidermonkey:
+3.  Build dependencies:
 
-        cd external/mozjs
-        ./webos-build.sh
+        cd external
+        ./build-deps.sh
 
 4.  Build Amity:
 

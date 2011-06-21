@@ -23,13 +23,11 @@ def build(ctx):
             src,
             pdk + "/include",
             pdk + "/include/SDL",
-            "../external/mozjs/webos-build/js/dist/include",
+            "../../build/webos/include/js",
         ],
         libpath=[
             pdk+"/device/lib",
-            # Inconsistent relative paths: when linking, waf runs from webos/build
-            "../../external/mozjs/webos-build/js/dist/lib",
-            "../../external/mozjs/webos-build/nspr/dist/lib",
+            "../../build/webos/lib",
         ],
         cxxflags=
             "-O2 -D__WEBOS__ " +

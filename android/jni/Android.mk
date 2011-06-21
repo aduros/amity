@@ -15,7 +15,7 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/external/SDL/include \
     $(LOCAL_PATH)/external/SDL_image/SDL_image \
     $(LOCAL_PATH)/external/SDL_mixer/SDL_mixer \
-    $(LOCAL_PATH)/external/mozjs/android-build/js/dist/include
+    $(LOCAL_PATH)/external/build/android/include/js
 
 # These don't expect to be prefixed by LOCAL_PATH, but includes do (?)
 # TODO: Why doesn't $(wildcard) work here?
