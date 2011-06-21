@@ -1,3 +1,7 @@
+//
+// Amity - cross-platform game engine
+// https://github.com/aduros/amity/blob/master/LICENSE.txt
+
 #include "script/TextureHandle.h"
 
 #include "canvas/Texture.h"
