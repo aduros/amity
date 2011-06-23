@@ -4,7 +4,8 @@
 # Location of the Android SDK and Mozilla's tweaked Android NDK r4c
 # Leave commented to skip building for Android
 #ANDROID_SDK=/home/bruno/work/android-sdk-linux_86
-#ANDROID_NDK=/home/bruno/work/android-ndk-r4c
+#ANDROID_NDK=/home/bruno/work/android-ndk-r5b
+#MOZILLA_ANDROID_NDK=/home/bruno/work/android-ndk-r4c
 
 # Location of the Palm PDK
 # Leave commented to skip building for webOS

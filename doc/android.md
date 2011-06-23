@@ -14,10 +14,11 @@ Building
         git submodule init
         git submodule update
 
-2.  Copy external/build.cfg.in to external/build.cfg and edit to point to your NDK and SDK:
+2.  Copy external/build.cfg.in to external/build.cfg and edit to point to your SDK and NDKs:
 
-        ANDROID_NDK=/absolute/path/to/android-ndk-r4c
         ANDROID_SDK=/absolute/path/to/android-sdk-linux_86
+        ANDROID_NDK=/absolute/path/to/android-ndk-r5b
+        MOZILLA_ANDROID_NDK=/absolute/path/to/android-ndk-r4c
 
     (Note the lack of spaces around the equal signs. This file is actually a Bash script)
 

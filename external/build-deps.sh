@@ -2,10 +2,10 @@
 #
 # Builds all of Amity's dependencies for each available platform
 
-CURRENT_DIR="`dirname $(readlink -f $0)`"
-INSTALL_DIR="$CURRENT_DIR/build"
+EXTERNAL_DIR="`dirname $(readlink -f $0)`"
+INSTALL_DIR="$EXTERNAL_DIR/build"
 
-. $CURRENT_DIR/build.cfg
+. $EXTERNAL_DIR/build.cfg
 
 function build {
     TMP_DIR="/tmp/amity_build"
@@ -26,8 +26,29 @@ function build {
 
 mkdir -p $INSTALL_DIR
 
-MOZILLA_CENTRAL=$CURRENT_DIR/mozjs/mozilla-central
+MOZILLA_CENTRAL=$EXTERNAL_DIR/mozjs/mozilla-central
 cd $MOZILLA_CENTRAL/js/src && (autoconf2.13 || autoconf213)
+
+CURL_FLAGS="
+    --disable-ares
+    --disable-ftp
+    --disable-imap
+    --disable-ipv6
+    --disable-ldap
+    --disable-ldaps
+    --disable-pop3
+    --disable-rtsp
+    --disable-smtp
+    --disable-sspi
+    --disable-dict
+    --disable-file
+    --disable-gopher
+    --disable-telnet
+    --disable-tftp
+    --without-ca-bundle
+    --without-random
+    --without-ssl
+    --without-zlib"
 
 #
 # Android dependencies
@@ -37,18 +58,28 @@ if [ ! -n "$ANDROID_SDK" -o ! -n "$ANDROID_NDK" ]; then
 else
     build android $MOZILLA_CENTRAL/nsprpub \
         --target=arm-android-eabi \
-        --with-android-ndk=$ANDROID_NDK \
+        --with-android-ndk=$MOZILLA_ANDROID_NDK \
         --disable-thumb2
 
     build android $MOZILLA_CENTRAL/js/src \
         --target=arm-android-eabi \
-        --with-android-ndk=$ANDROID_NDK \
+        --with-android-ndk=$MOZILLA_ANDROID_NDK \
         --with-nspr-cflags="-I$INSTALL_DIR/android/include/nspr" \
         --with-nspr-libs="-L$INSTALL_DIR/android/lib -lnspr4 -lplc4 -lplds4" \
         --enable-threadsafe \
         --with-endian=little \
         --with-arm-kuser \
         --disable-thumb2
+
+    ANDROID_TOOLCHAIN=$INSTALL_DIR/android-toolchain
+    $ANDROID_NDK/build/tools/make-standalone-toolchain.sh \
+        --platform=android-8 --install-dir=$ANDROID_TOOLCHAIN
+    export PATH=$ANDROID_TOOLCHAIN/bin:$PATH
+    export CC="arm-linux-androideabi-gcc"
+
+    build android $EXTERNAL_DIR/curl \
+        $CURL_FLAGS \
+        --host=arm-linux-eabi
 fi
 
 #
@@ -92,4 +123,8 @@ else
         --enable-threadsafe \
         --with-endian=little \
         --with-arm-kuser
+
+    build webos $EXTERNAL_DIR/curl \
+        $CURL_FLAGS \
+        --host=arm-linux
 fi
