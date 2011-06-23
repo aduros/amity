@@ -17,17 +17,22 @@ def build(ctx):
     ctx.program(
         source=ctx.path.find_node(src).ant_glob("**/*.cpp"),
         target="app/amity",
-        lib=[ "SDL", "SDL_image", "GLES_CM", "pdl", "js_static", "nspr4", "plc4", "plds4" ],
-        use=[ "js_static" ],
+        lib=[
+            "pdl",
+            "SDL", "SDL_image", "GLES_CM",
+            "js_static", "nspr4", "plc4", "plds4",
+            "curl", "rt" ],
+        use=[ "js_static", "curl" ],
         includes=[
             src,
             pdk + "/include",
             pdk + "/include/SDL",
-            "../../build/webos/include/js",
+            "../external/build/webos/include",
+            "../external/build/webos/include/js",
         ],
         libpath=[
             pdk+"/device/lib",
-            "../../build/webos/lib",
+            "../../external/build/webos/lib",
         ],
         cxxflags=
             "-O2 -D__WEBOS__ " +

@@ -5,6 +5,13 @@ include ../external/png/Android.mk
 include ../external/SDL/Android.mk
 include ../external/SDL_image/Android.mk
 
+LOCAL_PATH := ..
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := curl
+LOCAL_SRC_FILES  := external/build/android/lib/libcurl.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 include $(CLEAR_VARS)
 
 LOCAL_PATH := ..
@@ -15,6 +22,7 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/external/SDL/include \
     $(LOCAL_PATH)/external/SDL_image/SDL_image \
     $(LOCAL_PATH)/external/SDL_mixer/SDL_mixer \
+    $(LOCAL_PATH)/external/build/android/include \
     $(LOCAL_PATH)/external/build/android/include/js
 
 # These don't expect to be prefixed by LOCAL_PATH, but includes do (?)
@@ -29,6 +37,7 @@ LOCAL_SRC_FILES := \
     external/SDL/src/main/android/SDL_android_main.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL SDL_image nspr4 plc4 plds4 mozjs
+LOCAL_STATIC_LIBRARIES := curl
 
 LOCAL_LDLIBS := -lGLESv1_CM -llog -lstdc++ -ldl
 
