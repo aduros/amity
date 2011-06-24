@@ -189,7 +189,7 @@ void Script::initAmityClasses ()
     JSObject* net = JS_DefineObject(_jsCtx, amity, "net",
         NULL, NULL, JSPROP_READONLY | JSPROP_PERMANENT);
     JSFunctionSpec netFunctions[] = {
-        JS_FS("createHttpRequest", amity_net_createHttpRequest, 0, 0),
+        JS_FS("createHttpRequest", amity_net_createHttpRequest, 1, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, net, netFunctions);
