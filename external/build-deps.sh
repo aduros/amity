@@ -75,7 +75,7 @@ else
     $ANDROID_NDK/build/tools/make-standalone-toolchain.sh \
         --platform=android-8 --install-dir=$ANDROID_TOOLCHAIN
     export PATH=$ANDROID_TOOLCHAIN/bin:$PATH
-    export CC="arm-linux-androideabi-gcc"
+    export CC="arm-linux-androideabi-gcc -DANDROID"
 
     build android $EXTERNAL_DIR/curl \
         $CURL_FLAGS \
