@@ -14,6 +14,7 @@ JSPropertySpec TextureHandle::jsProperties[] = {
         TextureHandle::bindProperty<&TextureHandle::getHeight>, NULL },
     { NULL }
 };
+JSFunctionSpec TextureHandle::jsFunctions[] = { NULL };
 DEFINE_HANDLE_JSCLASS(TextureHandle, "Texture");
 
 TextureHandle::~TextureHandle ()

@@ -13,6 +13,7 @@ class TextureHandle : public Handle<TextureHandle>
 {
 public:
     static JSPropertySpec jsProperties[];
+    static JSFunctionSpec jsFunctions[];
     static JSClass jsClass;
 
     ~TextureHandle ();

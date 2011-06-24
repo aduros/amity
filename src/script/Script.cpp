@@ -9,6 +9,7 @@
 #include "AmityContext.h"
 #include "assets.h"
 #include "log.h"
+#include "script/HttpHandle.h"
 #include "script/TextureHandle.h"
 
 static JSRuntime* rt = NULL;
@@ -167,12 +168,6 @@ SCRIPT_FUNCTION (Script::amity_canvas_multiplyAlpha, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-static jsid getInternedId (JSContext* jsCtx, const char* name)
-{
-    JSString* str = JS_InternString(jsCtx, name);
-    return INTERNED_STRING_TO_JSID(str);
-}
-
 void Script::initAmityClasses ()
 {
     JSObject* global = JS_GetGlobalObject(_jsCtx);
@@ -190,6 +185,14 @@ void Script::initAmityClasses ()
     _onMouseDown = getInternedId(_jsCtx, "onMouseDown");
     _onMouseMove = getInternedId(_jsCtx, "onMouseMove");
     _onMouseUp = getInternedId(_jsCtx, "onMouseUp");
+
+    JSObject* net = JS_DefineObject(_jsCtx, amity, "net",
+        NULL, NULL, JSPROP_READONLY | JSPROP_PERMANENT);
+    JSFunctionSpec netFunctions[] = {
+        JS_FS("createHttpRequest", amity_net_createHttpRequest, 0, 0),
+        JS_FS_END
+    };
+    JS_DefineFunctions(_jsCtx, net, netFunctions);
 
     JSObject* canvas = JS_DefineObject(_jsCtx, amity, "canvas",
         NULL, NULL, JSPROP_READONLY | JSPROP_PERMANENT);
@@ -217,6 +220,7 @@ void Script::initAmityClasses ()
 
     // Init all handles
     TextureHandle::init(_jsCtx);
+    HttpHandle::init(_jsCtx);
 }
 
 Script::~Script ()
@@ -274,14 +278,12 @@ int Script::parse (const char* filename, const char* source)
 
 void Script::onEnterFrame (unsigned int dt)
 {
-    jsval fval;
-    if (!JS_GetPropertyById(_jsCtx, _eventObj, _onEnterFrame, &fval)) {
-        return;
-    }
-
-    jsval argv[] = { INT_TO_JSVAL(dt) };
-    jsval rval;
-    JS_CallFunctionValue(_jsCtx, _eventObj, fval, sizeof(argv), argv, &rval);
+    AmityEvent amityEvent = {
+        _eventObj,
+        _onEnterFrame,
+        INT_TO_JSVAL(dt)
+    };
+    consumeEvent(_jsCtx, &amityEvent);
 
     // TODO: Do we need to call this every frame?
     JS_MaybeGC(_jsCtx);
@@ -299,34 +301,45 @@ static JSObject* createMouseEvent (JSContext* jsCtx, int x, int y)
 
 void Script::onEvent (const SDL_Event* event)
 {
+    if (event->type == SDL_USEREVENT) {
+        if (event->user.code == AMITY_EVENT_SDL_CODE) {
+            AmityEvent* amityEvent = static_cast<AmityEvent*>(event->user.data1);
+            JS_RemoveObjectRoot(_jsCtx, &amityEvent->obj);
+            JS_RemoveValueRoot(_jsCtx, &amityEvent->param);
+            consumeEvent(_jsCtx, amityEvent);
+            delete amityEvent;
+        } else {
+            LOGW("Unrecognized SDL_UserEvent with code %d", event->user.code);
+        }
+        return; // Return early
+    }
+
     jsid handler;
-    JSObject* obj;
+    JSObject* param;
 
     switch (event->type) {
         case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
             handler = (event->type == SDL_MOUSEBUTTONDOWN) ? _onMouseDown : _onMouseUp;
-            obj = createMouseEvent(_jsCtx, event->button.x, event->button.y);
-            JS_DefineProperty(_jsCtx, obj, "button", INT_TO_JSVAL(event->button.button),
+            param = createMouseEvent(_jsCtx, event->button.x, event->button.y);
+            JS_DefineProperty(_jsCtx, param, "button", INT_TO_JSVAL(event->button.button),
                 JS_PropertyStub, JS_PropertyStub, 0);
             break;
         case SDL_MOUSEMOTION:
             handler = _onMouseMove;
-            obj = createMouseEvent(_jsCtx, event->motion.x, event->motion.y);
-            JS_DefineProperty(_jsCtx, obj, "deltaX", INT_TO_JSVAL(event->motion.xrel),
+            param = createMouseEvent(_jsCtx, event->motion.x, event->motion.y);
+            JS_DefineProperty(_jsCtx, param, "deltaX", INT_TO_JSVAL(event->motion.xrel),
                 JS_PropertyStub, JS_PropertyStub, 0);
-            JS_DefineProperty(_jsCtx, obj, "deltaY", INT_TO_JSVAL(event->motion.xrel),
+            JS_DefineProperty(_jsCtx, param, "deltaY", INT_TO_JSVAL(event->motion.xrel),
                 JS_PropertyStub, JS_PropertyStub, 0);
             break;
         default:
             return; // Unhandled event
     }
 
-    jsval fval;
-    if (!JS_GetPropertyById(_jsCtx, _eventObj, handler, &fval)) {
-        return; // Mising handler
-    }
-
-    jsval argv[] = { OBJECT_TO_JSVAL(obj) };
-    jsval rval;
-    JS_CallFunctionValue(_jsCtx, _eventObj, fval, sizeof(argv), argv, &rval);
+    AmityEvent amityEvent = {
+        _eventObj,
+        handler,
+        OBJECT_TO_JSVAL(param)
+    };
+    consumeEvent(_jsCtx, &amityEvent);
 }

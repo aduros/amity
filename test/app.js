@@ -58,3 +58,15 @@ __amity.events.onEnterFrame = function (dt) {
     __amity.canvas.drawImage(manTexture, -0.5*manTexture.width, -0.5*manTexture.height);
     __amity.canvas.restore();
 };
+
+var http = __amity.net.createHttpRequest("http://google.com");
+http.setHeader("X-custom-header", "foo");
+http.onComplete = function (data) {
+    __amity.log("Http request complete:");
+    __amity.log(data);
+    __amity.log("Length: " + data.length);
+};
+http.onError = function (message) {
+    __amity.log("Http error: " + message);
+};
+http.start(false);

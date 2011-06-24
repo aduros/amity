@@ -28,12 +28,15 @@ LOCAL_C_INCLUDES := \
 # These don't expect to be prefixed by LOCAL_PATH, but includes do (?)
 # TODO: Why doesn't $(wildcard) work here?
 LOCAL_SRC_FILES := \
-    src/main.cpp \
     src/assets.cpp \
     src/canvas/CanvasContext.cpp \
     src/canvas/Texture.cpp \
+    src/main.cpp \
+    src/net/Http.cpp \
+    src/script/HttpHandle.cpp \
     src/script/Script.cpp \
     src/script/TextureHandle.cpp \
+    src/script/util.cpp \
     external/SDL/src/main/android/SDL_android_main.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL SDL_image nspr4 plc4 plds4 mozjs

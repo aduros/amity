@@ -23,7 +23,7 @@ class Handle
 public:
     static void init (JSContext* jsCtx) {
         JS_InitClass(jsCtx, JS_GetGlobalObject(jsCtx), NULL, &T::jsClass,
-            NULL, 0, T::jsProperties, NULL, NULL, NULL);
+            NULL, 0, T::jsProperties, T::jsFunctions, NULL, NULL);
     }
 
     /**
