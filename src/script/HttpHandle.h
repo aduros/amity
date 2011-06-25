@@ -15,13 +15,11 @@ public:
     static JSFunctionSpec jsFunctions[];
     static JSClass jsClass;
 
+    Http http;
+
 protected:
     SCRIPT_FUNCTION (setHeader, jsCtx, argc, vp);
     SCRIPT_FUNCTION (send, jsCtx, argc, vp);
-
-    friend SCRIPT_FUNCTION (amity_net_createHttpRequest, jsCtx, argc, vp);
-
-    Http _http;
 };
 
 SCRIPT_FUNCTION (amity_net_createHttpRequest, jsCtx, argc, vp);

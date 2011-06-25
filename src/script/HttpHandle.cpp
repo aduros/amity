@@ -18,6 +18,35 @@ JSFunctionSpec HttpHandle::jsFunctions[] = {
 };
 DEFINE_HANDLE_JSCLASS(HttpHandle, "Http");
 
+struct HttpThreadData {
+    HttpHandle* handle;
+    JSContext* jsCtx;
+};
+
+static int threadSend (HttpThreadData* data)
+{
+    HttpHandle* handle = data->handle;
+    JSContext* jsCtx = data->jsCtx;
+
+    JS_BeginRequest(jsCtx);
+
+    AmityEvent* event = new AmityEvent();
+    const char* param;
+    if (handle->http.send()) {
+        event->handler = getInternedId(jsCtx, "onComplete");
+        param = handle->http.getData();
+    } else {
+        event->handler = getInternedId(jsCtx, "onError");
+        param = handle->http.getErrorMessage();
+    }
+    event->param = STRING_TO_JSVAL(JS_NewStringCopyZ(jsCtx, param));
+    event->obj = handle->getJSObject();
+    postEvent(jsCtx, event);
+
+    JS_EndRequest(jsCtx);
+    delete data;
+}
+
 SCRIPT_FUNCTION (HttpHandle::setHeader, jsCtx, argc, vp)
 {
     LOGI("TODO: HttpHandle.setHeader");
@@ -31,25 +60,22 @@ SCRIPT_FUNCTION (HttpHandle::send, jsCtx, argc, vp)
         JSString* str = JSVAL_TO_STRING(val);
         char* postData = JS_EncodeString(jsCtx, str);
         int length = JS_GetStringEncodingLength(jsCtx, str);
-        _http.setPostData(postData, length);
+        http.setPostData(postData, length);
         JS_free(jsCtx, postData);
     } else {
-        _http.setPostData(NULL, 0);
+        http.setPostData(NULL, 0);
     }
 
-    // TODO(bruno): Do this on another thread
-    AmityEvent* event = new AmityEvent();
-    const char* param;
-    if (_http.send()) {
-        event->handler = getInternedId(jsCtx, "onComplete");
-        param = _http.getData();
-    } else {
-        event->handler = getInternedId(jsCtx, "onError");
-        param = _http.getErrorMessage();
+    HttpThreadData* threadData = new HttpThreadData();
+    threadData->handle = this;
+    threadData->jsCtx = jsCtx;
+
+    SDL_Thread* thread = SDL_CreateThread((SDL_ThreadFunction) threadSend, threadData);
+    if (thread == NULL) {
+        LOGW("Could not create HTTP thread: %s", SDL_GetError());
+        // Do it on the main thread if we have to
+        threadSend(threadData);
     }
-    event->param = STRING_TO_JSVAL(JS_NewStringCopyZ(jsCtx, param));
-    event->obj = getJSObject();
-    postEvent(jsCtx, event);
 
     return JS_TRUE;
 }
@@ -63,7 +89,7 @@ SCRIPT_FUNCTION (amity_net_createHttpRequest, jsCtx, argc, vp)
 
     HttpHandle* handle = HttpHandle::create(jsCtx);
     char* str = JS_EncodeString(jsCtx, url);
-    handle->_http.setUrl(str);
+    handle->http.setUrl(str);
     JS_free(jsCtx, str);
     JS_SET_RVAL(jsCtx, vp, OBJECT_TO_JSVAL(handle->getJSObject()));
 
