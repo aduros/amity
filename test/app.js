@@ -69,4 +69,4 @@ http.onComplete = function (data) {
 http.onError = function (message) {
     __amity.log("Http error: " + message);
 };
-http.start(null);
+http.send(null);

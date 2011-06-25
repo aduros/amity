@@ -17,7 +17,7 @@ public:
 
 protected:
     SCRIPT_FUNCTION (setHeader, jsCtx, argc, vp);
-    SCRIPT_FUNCTION (start, jsCtx, argc, vp);
+    SCRIPT_FUNCTION (send, jsCtx, argc, vp);
 
     friend SCRIPT_FUNCTION (amity_net_createHttpRequest, jsCtx, argc, vp);
 

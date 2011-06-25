@@ -13,7 +13,7 @@
 JSPropertySpec HttpHandle::jsProperties[] = { NULL };
 JSFunctionSpec HttpHandle::jsFunctions[] = {
     JS_FS("setHeader", HttpHandle::bindFunction<&HttpHandle::setHeader>, 2, 0),
-    JS_FS("start", HttpHandle::bindFunction<&HttpHandle::start>, 1, 0),
+    JS_FS("send", HttpHandle::bindFunction<&HttpHandle::send>, 1, 0),
     JS_FS_END
 };
 DEFINE_HANDLE_JSCLASS(HttpHandle, "Http");
@@ -24,7 +24,7 @@ SCRIPT_FUNCTION (HttpHandle::setHeader, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (HttpHandle::start, jsCtx, argc, vp)
+SCRIPT_FUNCTION (HttpHandle::send, jsCtx, argc, vp)
 {
     jsval val = JS_ARGV(jsCtx, vp)[0];
     if (JSVAL_IS_STRING(val)) {
