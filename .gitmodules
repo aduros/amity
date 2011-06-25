@@ -1,9 +1,6 @@
 [submodule "external/SDL"]
 	path = external/SDL
 	url = git://github.com/aduros/SDL.git
-[submodule "external/mozjs/mozilla-central"]
-	path = external/mozjs/mozilla-central
-	url = https://github.com/doublec/mozilla-central.git
 [submodule "external/SDL_image/SDL_image"]
 	path = external/SDL_image/SDL_image
 	url = git://github.com/aduros/SDL_image.git
