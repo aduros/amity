@@ -36,12 +36,14 @@ SCRIPT_PROPERTY (TextureHandle::getHeight, jsCtx, obj, id, vp)
 
 SCRIPT_FUNCTION (amity_createTexture, jsCtx, argc, vp)
 {
-    const char* assetName;
-    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "s", &assetName)) {
+    JSString* assetName;
+    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "S", &assetName)) {
         return JS_FALSE;
     }
 
-    Texture* texture = Texture::fromAsset(assetName);
+    char* str = JS_EncodeString(jsCtx, assetName);
+    Texture* texture = Texture::fromAsset(str);
+    JS_free(jsCtx, str);
     if (texture == NULL) {
         return JS_FALSE;
     }

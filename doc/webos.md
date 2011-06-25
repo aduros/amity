@@ -7,7 +7,7 @@ Requirements
 Building
 --------
 
-1.  Download the SDL and Mozilla submodules:
+1.  Download the SDL submodules:
 
         git submodule init
         git submodule update
@@ -21,6 +21,7 @@ Building
 3.  Build dependencies:
 
         cd external
+        ./download-deps.sh
         ./build-deps.sh
 
 4.  Build Amity:

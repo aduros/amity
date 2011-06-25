@@ -51,13 +51,15 @@ SCRIPT_FUNCTION (HttpHandle::start, jsCtx, argc, vp)
 
 SCRIPT_FUNCTION (amity_net_createHttpRequest, jsCtx, argc, vp)
 {
-    const char* url;
-    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "s", &url)) {
+    JSString* url;
+    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "S", &url)) {
         return JS_FALSE;
     }
 
     HttpHandle* handle = HttpHandle::create(jsCtx);
-    handle->_http.setUrl(url);
+    char* str = JS_EncodeString(jsCtx, url);
+    handle->_http.setUrl(str);
+    JS_free(jsCtx, str);
     JS_SET_RVAL(jsCtx, vp, OBJECT_TO_JSVAL(handle->getJSObject()));
 
     return JS_TRUE;

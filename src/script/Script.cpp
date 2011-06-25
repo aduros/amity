@@ -16,7 +16,7 @@ static JSRuntime* rt = NULL;
 
 static JSClass classGlobal = {
     "global", JSCLASS_GLOBAL_FLAGS,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
     JSCLASS_NO_OPTIONAL_MEMBERS
 };
@@ -29,7 +29,7 @@ static JSBool bindFunction (JSContext* jsCtx, uintN argc, jsval* vp)
 }
 
 template <class T, JSBool (T::*fn)(JSContext*, JSObject*, jsid, jsval*)>
-static JSBool bindProperty (JSContext* jsCtx, JSObject* obj, jsid id, jsval* vp)
+static JSBool bindProperty (JSContext* jsCtx, JSObject* obj, jsid id, JSBool strict, jsval* vp)
 {
     T* self = static_cast<T*>(JS_GetContextPrivate(jsCtx));
     return (self->*fn)(jsCtx, obj, id, vp);
@@ -45,12 +45,15 @@ static void scriptReportError (JSContext* jsCtx, const char* message, JSErrorRep
 
 static JSBool amity_log (JSContext* jsCtx, uintN argc, jsval* vp)
 {
-    const char* message;
-    if (!JS_ConvertArguments(jsCtx, argc, JS_ARGV(jsCtx, vp), "s", &message)) {
+    JSString* message;
+    if (!JS_ConvertArguments(jsCtx, argc, JS_ARGV(jsCtx, vp), "S", &message)) {
         return JS_FALSE;
     }
 
-    LOGI("--> %s", message);
+    char* str = JS_EncodeString(jsCtx, message);
+    LOGI("--> %s", str);
+    JS_free(jsCtx, str);
+
     return JS_TRUE;
 }
 
@@ -260,7 +263,7 @@ int Script::parse (const char* filename, const char* source)
     JS_SetVersion(_jsCtx, JSVERSION_ECMA_5);
     JS_SetErrorReporter(_jsCtx, scriptReportError);
 
-    JSObject* global = JS_NewGlobalObject(_jsCtx, &classGlobal);
+    JSObject* global = JS_NewCompartmentAndGlobalObject(_jsCtx, &classGlobal, NULL);
     if (global == NULL) {
        return 1;
     }
@@ -293,9 +296,9 @@ static JSObject* createMouseEvent (JSContext* jsCtx, int x, int y)
 {
     JSObject* event = JS_NewObject(jsCtx, NULL, NULL, JS_GetGlobalObject(jsCtx));
     JS_DefineProperty(jsCtx, event, "x", INT_TO_JSVAL(x),
-        JS_PropertyStub, JS_PropertyStub, 0);
+        JS_PropertyStub, JS_StrictPropertyStub, 0);
     JS_DefineProperty(jsCtx, event, "y", INT_TO_JSVAL(y),
-        JS_PropertyStub, JS_PropertyStub, 0);
+        JS_PropertyStub, JS_StrictPropertyStub, 0);
     return event;
 }
 
@@ -322,15 +325,15 @@ void Script::onEvent (const SDL_Event* event)
             handler = (event->type == SDL_MOUSEBUTTONDOWN) ? _onMouseDown : _onMouseUp;
             param = createMouseEvent(_jsCtx, event->button.x, event->button.y);
             JS_DefineProperty(_jsCtx, param, "button", INT_TO_JSVAL(event->button.button),
-                JS_PropertyStub, JS_PropertyStub, 0);
+                JS_PropertyStub, JS_StrictPropertyStub, 0);
             break;
         case SDL_MOUSEMOTION:
             handler = _onMouseMove;
             param = createMouseEvent(_jsCtx, event->motion.x, event->motion.y);
             JS_DefineProperty(_jsCtx, param, "deltaX", INT_TO_JSVAL(event->motion.xrel),
-                JS_PropertyStub, JS_PropertyStub, 0);
+                JS_PropertyStub, JS_StrictPropertyStub, 0);
             JS_DefineProperty(_jsCtx, param, "deltaY", INT_TO_JSVAL(event->motion.xrel),
-                JS_PropertyStub, JS_PropertyStub, 0);
+                JS_PropertyStub, JS_StrictPropertyStub, 0);
             break;
         default:
             return; // Unhandled event

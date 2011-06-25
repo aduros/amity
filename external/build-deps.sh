@@ -26,8 +26,8 @@ function build {
 
 mkdir -p $INSTALL_DIR
 
-MOZILLA_CENTRAL=$EXTERNAL_DIR/mozjs/mozilla-central
-cd $MOZILLA_CENTRAL/js/src && (autoconf2.13 || autoconf213)
+MOZILLA_REPO=$EXTERNAL_DIR/mozilla-release
+cd $MOZILLA_REPO/js/src && (autoconf2.13 || autoconf213)
 
 CURL_FLAGS="
     --disable-ares
@@ -56,14 +56,15 @@ CURL_FLAGS="
 if [ ! -n "$ANDROID_SDK" -o ! -n "$ANDROID_NDK" ]; then
     echo "ANDROID_SDK or ANDROID_NDK not set. Skipping Android."
 else
-    build android $MOZILLA_CENTRAL/nsprpub \
+    build android $MOZILLA_REPO/nsprpub \
         --target=arm-android-eabi \
         --with-android-ndk=$MOZILLA_ANDROID_NDK \
         --disable-thumb2
 
-    build android $MOZILLA_CENTRAL/js/src \
+    build android $MOZILLA_REPO/js/src \
         --target=arm-android-eabi \
         --with-android-ndk=$MOZILLA_ANDROID_NDK \
+        --with-android-sdk=$ANDROID_SDK \
         --with-nspr-cflags="-I$INSTALL_DIR/android/include/nspr" \
         --with-nspr-libs="-L$INSTALL_DIR/android/lib -lnspr4 -lplc4 -lplds4" \
         --enable-threadsafe \
@@ -108,7 +109,7 @@ else
     export HOST_CXX=`which g++`
     export CROSS_COMPILE=1
 
-    build webos $MOZILLA_CENTRAL/nsprpub \
+    build webos $MOZILLA_REPO/nsprpub \
         --disable-installer \
         --enable-optimize \
         --disable-tests \
@@ -116,7 +117,7 @@ else
     # Force mozjs to static link NSPR. --disable-shared does not seem to work.
     rm -f $INSTALL_DIR/webos/lib/*.so
 
-    build webos $MOZILLA_CENTRAL/js/src \
+    build webos $MOZILLA_REPO/js/src \
         --target=arm-linux \
         --with-nspr-cflags="-I$INSTALL_DIR/webos/include/nspr" \
         --with-nspr-libs="-L$INSTALL_DIR/webos/lib -lnspr4 -lplc4 -lplds4" \

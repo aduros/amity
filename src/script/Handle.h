@@ -9,7 +9,7 @@
 #define DEFINE_HANDLE_JSCLASS(objectType, name) \
     JSClass objectType::jsClass = { \
         name, JSCLASS_HAS_PRIVATE, \
-        JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, \
+        JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub, \
         JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, objectType::finalize, \
     };
 

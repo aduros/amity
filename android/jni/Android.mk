@@ -1,6 +1,3 @@
-# TODO: Look into using NDK r5's module system instead of this macro
-#include $(call all-makefiles-under, ../external)
-include ../external/mozjs/Android.mk
 include ../external/png/Android.mk
 include ../external/SDL/Android.mk
 include ../external/SDL_image/Android.mk
@@ -11,6 +8,26 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := curl
 LOCAL_SRC_FILES  := external/build/android/lib/libcurl.a
 include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := nspr4
+LOCAL_SRC_FILES := external/build/android/lib/libnspr4.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := plc4
+LOCAL_SRC_FILES := external/build/android/lib/libplc4.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := plds4
+LOCAL_SRC_FILES := external/build/android/lib/libplds4.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mozjs
+LOCAL_SRC_FILES := external/build/android/lib/libmozjs.so
+include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 
