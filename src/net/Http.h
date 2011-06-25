@@ -14,7 +14,7 @@ public:
     ~Http ();
 
     void setUrl (const char* url);
-    void setPost (bool post);
+    void setPostData (const char* postData, size_t length);
 
     bool send ();
 

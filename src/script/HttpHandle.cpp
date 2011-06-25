@@ -26,11 +26,16 @@ SCRIPT_FUNCTION (HttpHandle::setHeader, jsCtx, argc, vp)
 
 SCRIPT_FUNCTION (HttpHandle::start, jsCtx, argc, vp)
 {
-    JSBool post;
-    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "b", &post)) {
-        return JS_FALSE;
+    jsval val = JS_ARGV(jsCtx, vp)[0];
+    if (JSVAL_IS_STRING(val)) {
+        JSString* str = JSVAL_TO_STRING(val);
+        char* postData = JS_EncodeString(jsCtx, str);
+        int length = JS_GetStringEncodingLength(jsCtx, str);
+        _http.setPostData(postData, length);
+        JS_free(jsCtx, postData);
+    } else {
+        _http.setPostData(NULL, 0);
     }
-    _http.setPost(post);
 
     // TODO(bruno): Do this on another thread
     AmityEvent* event = new AmityEvent();

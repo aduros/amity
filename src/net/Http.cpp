@@ -40,9 +40,15 @@ void Http::setUrl (const char* url)
     curl_easy_setopt(_curl, CURLOPT_URL, url);
 }
 
-void Http::setPost (bool post)
+void Http::setPostData (const char* postData, size_t length)
 {
-    curl_easy_setopt(_curl, CURLOPT_POST, post);
+    if (postData == NULL) {
+        curl_easy_setopt(_curl, CURLOPT_HTTPGET, true);
+    } else {
+        curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, length);
+        curl_easy_setopt(_curl, CURLOPT_COPYPOSTFIELDS, postData);
+        curl_easy_setopt(_curl, CURLOPT_POST, true);
+    }
 }
 
 bool Http::send ()
