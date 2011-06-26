@@ -28,11 +28,12 @@ static int threadSend (HttpThreadData* data)
     HttpHandle* handle = data->handle;
     JSContext* jsCtx = data->jsCtx;
 
-    JS_BeginRequest(jsCtx);
-
+    bool success = handle->http.send();
     AmityEvent* event = new AmityEvent();
     const char* param;
-    if (handle->http.send()) {
+
+    JS_BeginRequest(jsCtx);
+    if (success) {
         event->handler = getInternedId(jsCtx, "onComplete");
         param = handle->http.getData();
     } else {
@@ -42,8 +43,8 @@ static int threadSend (HttpThreadData* data)
     event->param = STRING_TO_JSVAL(JS_NewStringCopyZ(jsCtx, param));
     event->obj = handle->getJSObject();
     postEvent(jsCtx, event);
-
     JS_EndRequest(jsCtx);
+
     delete data;
 }
 
