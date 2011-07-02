@@ -15,7 +15,8 @@ CanvasContext::CanvasContext (AmityContext* amityCtx) : _amityCtx(amityCtx)
     // FIXME: Detect if this extension is supported.
     // SDL_GL_ExtensionSupported("GL_OES_draw_texture") appears to return false on the N1 even
     // though it works fine.
-    state.canDrawTexture = true;
+    // TODO: Setting this to true doesn't seem to be a performance win. Think about removing it.
+    state.canDrawTexture = false;
 
     state.translateX = 0;
     state.translateY = 0;
@@ -88,7 +89,7 @@ void CanvasContext::drawImage (const Texture* texture,
         float destW = state.scaleX * sourceW;
         float destH = state.scaleY * sourceH;
         GLfloat cropRect[] = {
-            sourceX, sourceY + texture->getHeight(), sourceW, -sourceH
+            sourceX, sourceY + sourceH, sourceW, -sourceH
         };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_CROP_RECT_OES, cropRect);
         glDrawTexfOES(state.translateX + destX,
