@@ -23,10 +23,11 @@ struct HttpThreadData {
     JSContext* jsCtx;
 };
 
-static int threadSend (HttpThreadData* data)
+static int threadSend (void* ctx)
 {
-    HttpHandle* handle = data->handle;
-    JSContext* jsCtx = data->jsCtx;
+    HttpThreadData* threadData = static_cast<HttpThreadData*>(ctx);
+    HttpHandle* handle = threadData->handle;
+    JSContext* jsCtx = threadData->jsCtx;
 
     bool success = handle->http.send();
     AmityEvent* event = new AmityEvent();
@@ -45,7 +46,7 @@ static int threadSend (HttpThreadData* data)
     postEvent(jsCtx, event);
     JS_EndRequest(jsCtx);
 
-    delete data;
+    delete threadData;
 }
 
 SCRIPT_FUNCTION (HttpHandle::setHeader, jsCtx, argc, vp)
@@ -71,7 +72,7 @@ SCRIPT_FUNCTION (HttpHandle::send, jsCtx, argc, vp)
     threadData->handle = this;
     threadData->jsCtx = jsCtx;
 
-    SDL_Thread* thread = SDL_CreateThread((SDL_ThreadFunction) threadSend, threadData);
+    SDL_Thread* thread = SDL_CreateThread(threadSend, threadData);
     if (thread == NULL) {
         LOGW("Could not create HTTP thread: %s", SDL_GetError());
         // Do it on the main thread if we have to
