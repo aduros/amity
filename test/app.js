@@ -70,3 +70,5 @@ http.onError = function (message) {
     __amity.log("Http error: " + message);
 };
 http.send(null);
+
+__amity.log("Holy quine, Batman! " + __amity.loadFile("app.js"));

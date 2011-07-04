@@ -171,6 +171,29 @@ SCRIPT_FUNCTION (Script::amity_canvas_multiplyAlpha, jsCtx, argc, vp)
     return JS_TRUE;
 }
 
+SCRIPT_FUNCTION (amity_loadFile, jsCtx, argc, vp)
+{
+    JSString* assetName;
+    if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "S", &assetName)) {
+        return JS_FALSE;
+    }
+
+    char* str = JS_EncodeString(jsCtx, assetName);
+    SDL_RWops* asset = loadAsset(str);
+    JS_free(jsCtx, str);
+    if (asset == NULL) {
+        return JS_FALSE;
+    }
+
+    size_t size;
+    char* bytes = readBytesFromAsset(asset, &size);
+    JSString* rval = JS_NewStringCopyN(jsCtx, bytes, size);
+    JS_SET_RVAL(jsCtx, vp, STRING_TO_JSVAL(rval));
+    delete bytes;
+
+    return JS_TRUE;
+}
+
 void Script::initAmityClasses ()
 {
     JSObject* global = JS_GetGlobalObject(_jsCtx);
@@ -179,6 +202,7 @@ void Script::initAmityClasses ()
     JSFunctionSpec amityFunctions[] = {
         JS_FS("log", amity_log, 1, 0),
         JS_FS("createTexture", amity_createTexture, 1, 0),
+        JS_FS("loadFile", amity_loadFile, 1, 0),
         JS_FS_END
     };
     JS_DefineFunctions(_jsCtx, amity, amityFunctions);

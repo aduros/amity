@@ -26,3 +26,16 @@ SDL_RWops* loadAsset (const char* assetName)
     }
     return asset;
 }
+
+char* readBytesFromAsset (SDL_RWops* asset, size_t* size)
+{
+    // Seek to the end and get the length
+    *size = SDL_RWseek(asset, 0, RW_SEEK_END);
+
+    // Rewind before reading everything into an array
+    SDL_RWseek(asset, 0, RW_SEEK_SET);
+
+    char* buffer = new char[*size];
+    SDL_RWread(asset, buffer, *size, 1);
+    return buffer;
+}
