@@ -2,11 +2,11 @@ __amity.log("Hello world!");
 
 var mouseX = 0;
 var mouseY = 0;
-var bogartTexture = __amity.createTexture("bogart.png");
+var bogartTexture = __amity.loadTexture("bogart.png");
 __amity.log("Loaded texture with size: " + bogartTexture.width + " by " + bogartTexture.height);
 
-var tentacleTexture = __amity.createTexture("tentacle64.png");
-var manTexture = __amity.createTexture("man.png");
+var tentacleTexture = __amity.loadTexture("tentacle64.png");
+var manTexture = __amity.loadTexture("man.png");
 
 __amity.log("JS sees the screen is " + __amity.canvas.WIDTH + " by " + __amity.canvas.HEIGHT);
 

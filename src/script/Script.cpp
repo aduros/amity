@@ -201,7 +201,7 @@ void Script::initAmityClasses ()
     JSObject* amity = JS_DefineObject(_jsCtx, global, "__amity", NULL, NULL, 0);
     JSFunctionSpec amityFunctions[] = {
         JS_FS("log", amity_log, 1, 0),
-        JS_FS("createTexture", amity_createTexture, 1, 0),
+        JS_FS("loadTexture", amity_loadTexture, 1, 0),
         JS_FS("loadFile", amity_loadFile, 1, 0),
         JS_FS_END
     };

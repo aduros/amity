@@ -34,7 +34,7 @@ SCRIPT_PROPERTY (TextureHandle::getHeight, jsCtx, obj, id, vp)
     return JS_TRUE;
 }
 
-SCRIPT_FUNCTION (amity_createTexture, jsCtx, argc, vp)
+SCRIPT_FUNCTION (amity_loadTexture, jsCtx, argc, vp)
 {
     JSString* assetName;
     if (!JS_ConvertArguments(jsCtx, 1, JS_ARGV(jsCtx, vp), "S", &assetName)) {

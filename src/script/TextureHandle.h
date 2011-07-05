@@ -33,4 +33,4 @@ protected:
     Texture* _texture;
 };
 
-SCRIPT_FUNCTION (amity_createTexture, jsCtx, argc, vp);
+SCRIPT_FUNCTION (amity_loadTexture, jsCtx, argc, vp);
